@@ -40,7 +40,7 @@ module.exports =
                 owner_id: 5
                 hidden: false
 
-            test.equals m.sql(), 'INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);'
+            test.equals m.sql(), 'INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);\n'
             test.deepEqual m.params(), ['Amazing Project', 5, false]
             test.done()
 
@@ -51,6 +51,6 @@ module.exports =
                 name: 'Another Project'
                 created_on: -> m.raw 'NOW()'
 
-            test.equals m.sql(), 'INSERT INTO project (name, created_on) VALUES (?, NOW());'
+            test.equals m.sql(), 'INSERT INTO project (name, created_on) VALUES (?, NOW());\n'
             test.deepEqual m.params(), ['Another Project']
             test.done()

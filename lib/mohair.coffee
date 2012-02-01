@@ -21,7 +21,7 @@ mohair = class
                 @raw '?'
                 @_params.push value
 
-        @raw ");"
+        @raw ");\n"
 
     # getters
 
