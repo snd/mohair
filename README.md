@@ -96,6 +96,33 @@ SELECT name, id FROM project WHERE hidden = ?;
 [true]
 ```
 
+#### join and group by
+
+```coffeescript
+mohair = {select, join, group, sql, params} = require('mohair')()
+
+select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
+    join.left 'task', 'project.id' , 'task.project_id'
+    group 'project.id'
+```
+
+`sql()` returns:
+
+```sql
+SELECT
+    count(task.id) AS taskCount,
+    project.*
+FROM project
+LEFT JOIN task ON project.id = task.project_id
+GROUP BY project.id;
+```
+
+`params()` returns:
+
+```coffeescript
+[]
+```
+
 ## Examples
 
 ### use it with node-mysql
