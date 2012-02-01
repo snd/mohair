@@ -20,3 +20,13 @@ module.exports =
             test.equals m.sql(), string
             test.deepEqual m.params(), [7, 4]
             test.done()
+
+        'twice': (test) ->
+
+            m = mohair()
+            m.raw 'SELECT * FROM project WHERE id = ?;', 7
+            m.raw 'SELECT * FROM project WHERE id = ?;', 4
+
+            test.equals m.sql(), 'SELECT * FROM project WHERE id = ?;SELECT * FROM project WHERE id = ?;'
+            test.deepEqual m.params(), [7, 4]
+            test.done()
