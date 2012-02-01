@@ -39,6 +39,30 @@ INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
 ['Amazing Project', 5, false]
 ```
 
+#### raw values
+
+if you want to insert the result of an sql function you can do so like this:
+
+```coffeescript
+{insert, raw, sql, params} = require('mohair')()
+
+insert 'project',
+    name: 'Another Project'
+    created_on: -> raw 'NOW()'
+```
+
+`sql()` returns:
+
+```sql
+INSERT INTO project (name, created_on) VALUES (?, NOW());
+```
+
+`params()` returns:
+
+```coffeescript
+['Another Project']
+```
+
 ### update
 
 ```coffeescript
