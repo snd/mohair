@@ -52,3 +52,21 @@ module.exports =
             test.equals m.sql(), 'INSERT INTO project (name, created_on) VALUES (?, NOW());\n'
             test.deepEqual m.params(), ['Another Project']
             test.done()
+
+    'equal':
+
+        'bindigns': (test) ->
+            m = mohair()
+            m.equal 'id', 7
+
+            test.equals m.sql(), 'id = ?'
+            test.deepEqual m.params(), [7]
+            test.done()
+
+        'raw': (test) ->
+            m = mohair()
+            m.equal 'id', -> m.raw 'owner_id'
+
+            test.equals m.sql(), 'id = owner_id'
+            test.deepEqual m.params(), []
+            test.done()
