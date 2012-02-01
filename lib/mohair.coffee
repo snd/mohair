@@ -23,6 +23,12 @@ mohair = class
 
         @raw ");\n"
 
+    equal: (column, bindingOrFunction) ->
+        @raw "#{column} = "
+        if _.isFunction(bindingOrFunction) then bindingOrFunction() else
+            @raw '?'
+            @_params.push bindingOrFunction
+
     # getters
 
     sql: -> @_sql
