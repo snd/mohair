@@ -55,7 +55,7 @@ module.exports =
 
     'equal':
 
-        'bindigns': (test) ->
+        'bindings': (test) ->
             m = mohair()
             m.equal 'id', 7
 
@@ -69,4 +69,18 @@ module.exports =
 
             test.equals m.sql(), 'id = owner_id'
             test.deepEqual m.params(), []
+            test.done()
+
+    'update':
+        'parameter bindings': (test) ->
+            changes =
+                name: 'Even more amazing project'
+                hidden: true
+
+            m = mohair()
+            m.update 'project', changes, ->
+                m.where -> m.equal 'id', 7
+
+            test.equals m.sql(), 'UPDATE project SET name = ?, hidden = ? WHERE id = ?;\n'
+            test.deepEqual m.params(), ['Even more amazing project', true, 7]
             test.done()
