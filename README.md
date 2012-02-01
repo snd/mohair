@@ -106,6 +106,8 @@ select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
     group 'project.id'
 ```
 
+**Note:** use `join`, `join.left`, `join.right`, and `join.inner` as needed.
+
 `sql()` returns:
 
 ```sql
