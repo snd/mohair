@@ -54,6 +54,28 @@ UPDATE `project` SET `name` = ?, `hidden` = ? WHERE `id` = ?;
 ['Even more amazing project, true, 7]
 ```
 
+### select
+
+#### implicit star
+
+```coffeescript
+mohair = {select, sql, params} = require('mohair')()
+
+select 'project'
+```
+
+`sql()` returns:
+
+```sql
+SELECT * FROM `project`;
+```
+
+`params()` returns:
+
+```coffeescript
+[]
+```
+
 ## Examples
 
 ### use it with node-mysql
