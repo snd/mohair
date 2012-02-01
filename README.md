@@ -29,6 +29,31 @@ INSERT INTO `project` (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?);
 ['Amazing Project', 5, false]
 ```
 
+### update
+
+```coffeescript
+mohair = {update, where, sql, params} = require('mohair')()
+
+changes =
+    name: 'Even more amazing project'
+    hidden: true
+
+update 'project', changes, ->
+    where -> mohair.eq 'id', 7
+```
+
+`sql()` returns:
+
+```sql
+UPDATE `project` SET `name` = ?, `hidden` = ? WHERE `id` = ?
+```
+
+`params()` returns:
+
+```coffeescript
+['Even more amazing project, true, 7]
+```
+
 ## Examples
 
 ### use it with node-mysql
