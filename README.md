@@ -4,6 +4,11 @@ sql query builder for nodejs
 
 **very early alpha, the api will most likely change a lot!**
 
+## Features
+
+- makes building common queries much easier
+- fallback to plain sql is always possible for more exotic queries
+
 ## Advantages over writing mysql queries by hand
 
 - composability: query parts (for example conditions) can be factored out into functions and reused.
