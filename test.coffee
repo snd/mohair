@@ -85,7 +85,7 @@ module.exports =
             test.deepEqual m.params(), ['Even more amazing project', true, 7]
             test.done()
 
-        'raw': (test) ->
+        'bindings and raw': (test) ->
 
             m = mohair()
 
