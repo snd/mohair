@@ -4,7 +4,7 @@ sql query builder for nodejs
 
 **very much work in progress!**
 
-## examples
+## Usage
 
 ### insert
 
