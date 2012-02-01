@@ -128,9 +128,9 @@ GROUP BY project.id;
 ### delete
 
 ```coffeescript
-mohair = {delete, where, sql, params} = require('mohair')()
+mohair = {where, sql, params} = require('mohair')()
 
-delete 'project', ->
+mohair.delete 'project', ->
     where ->
         mohair.eq 'id', 7
         mohair.and()
