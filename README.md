@@ -45,7 +45,7 @@ update 'project', changes, ->
 `sql()` returns:
 
 ```sql
-UPDATE `project` SET `name` = ?, `hidden` = ? WHERE `id` = ?;
+UPDATE project SET name = ?, hidden = ? WHERE id = ?;
 ```
 
 `params()` returns:
@@ -67,7 +67,7 @@ select 'project'
 `sql()` returns:
 
 ```sql
-SELECT * FROM `project`;
+SELECT * FROM project;
 ```
 
 `params()` returns:
@@ -87,7 +87,7 @@ select 'project', ['name', 'id'], -> where 'hidden', true
 `sql()` returns:
 
 ```sql
-SELECT `name`, `id` FROM `project` WHERE `hidden` = ?;
+SELECT name, id FROM project WHERE hidden = ?;
 ```
 
 `params()` returns:
