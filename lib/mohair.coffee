@@ -29,6 +29,10 @@ mohair = class
             @raw '?'
             @_params.push bindingOrFunction
 
+    where: (inner) ->
+        @raw " WHERE "
+        inner()
+
     # getters
 
     sql: -> @_sql
