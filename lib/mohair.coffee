@@ -11,9 +11,8 @@ mohair = class
         @_params.push params...
 
     insert: (table, object) ->
-        @raw "INSERT INTO #{table} "
-        @raw "(#{_.keys(object).join(', ')})"
-        @raw " VALUES ("
+        @raw "INSERT INTO #{table} (#{_.keys(object).join(', ')}) VALUES ("
+
         isFirstValue = true
         _.each _.values(object), (value) =>
             @raw ', ' if not isFirstValue
@@ -21,6 +20,7 @@ mohair = class
             if _.isFunction(value) then value() else
                 @raw '?'
                 @_params.push value
+
         @raw ");"
 
     # getters
