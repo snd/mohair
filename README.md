@@ -18,11 +18,13 @@ insert 'project',
 ```
 
 `sql()` returns:
-```sql```
+
+```sql
 INSERT INTO `project` (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?);
 ```
 
 `params()` returns:
+
 ```coffeescript
 ['Amazing Project', 5, false]
 ```
