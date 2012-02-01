@@ -1,0 +1,11 @@
+{
+  "author": "snd",
+  "name": "mohair",
+  "version": "0.0.1",
+  "dependencies": {
+    "underscore": "*"
+  },
+  "devDependencies": {
+    "nodeunit": "*"
+  }
+}
