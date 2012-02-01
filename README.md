@@ -61,7 +61,7 @@ UPDATE project SET name = ?, hidden = ? WHERE id = ?;
 `params()` returns:
 
 ```coffeescript
-['Even more amazing project, true, 7]
+['Even more amazing project', true, 7]
 ```
 
 ### select
