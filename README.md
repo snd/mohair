@@ -66,14 +66,14 @@ INSERT INTO project (name, created_on) VALUES (?, NOW());
 ### update
 
 ```coffeescript
-mohair = {update, where, sql, params} = require('mohair')()
+mohair = {update, where, equal, sql, params} = require('mohair')()
 
 changes =
     name: 'Even more amazing project'
     hidden: true
 
 update 'project', changes, ->
-    where -> mohair.equal 'id', 7
+    where -> equal 'id', 7
 ```
 
 `sql()` returns:
@@ -164,13 +164,13 @@ GROUP BY project.id;
 ### delete
 
 ```coffeescript
-mohair = {where, sql, params} = require('mohair')()
+mohair = {where, equal, sql, params} = require('mohair')()
 
 mohair.delete 'project', ->
     where ->
-        mohair.equal 'id', 7
+        equal 'id', 7
         mohair.and()
-        mohair.equal 'hidden', true
+        equal 'hidden', true
 ```
 
 `sql()` returns:
@@ -188,13 +188,13 @@ DELETE FROM project WHERE id = ? AND hidden = ?;
 ### transactions
 
 ```coffeescript
-mohair = {transaction, where, sql, params} = require('mohair')()
+mohair = {transaction, where, equal, sql, params} = require('mohair')()
 
 transaction ->
     mohair.delete 'project', ->
-        where -> mohair.equal 'id', 7
+        where -> equal 'id', 7
     mohair.update 'project', {name: 'New name'}, ->
-        where -> mohair.equal 'id', 8
+        where -> equal 'id', 8
 ```
 
 `sql()` returns:
