@@ -88,6 +88,8 @@ UPDATE project SET name = ?, hidden = ? WHERE id = ?;
 ['Even more amazing project', true, 7]
 ```
 
+**Note:** you can insert raw values the same way as for inserts.
+
 ### select
 
 #### implicit star
