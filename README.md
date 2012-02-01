@@ -45,7 +45,7 @@ update 'project', changes, ->
 `sql()` returns:
 
 ```sql
-UPDATE `project` SET `name` = ?, `hidden` = ? WHERE `id` = ?
+UPDATE `project` SET `name` = ?, `hidden` = ? WHERE `id` = ?;
 ```
 
 `params()` returns:
