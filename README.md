@@ -73,7 +73,7 @@ changes =
     hidden: true
 
 update 'project', changes, ->
-    where -> mohair.eq 'id', 7
+    where -> mohair.equal 'id', 7
 ```
 
 `sql()` returns:
@@ -168,9 +168,9 @@ mohair = {where, sql, params} = require('mohair')()
 
 mohair.delete 'project', ->
     where ->
-        mohair.eq 'id', 7
+        mohair.equal 'id', 7
         mohair.and()
-        mohair.eq 'hidden', true
+        mohair.equal 'hidden', true
 ```
 
 `sql()` returns:
@@ -192,9 +192,9 @@ mohair = {transaction, where, sql, params} = require('mohair')()
 
 transaction ->
     mohair.delete 'project', ->
-        where -> mohair.eq 'id', 7
+        where -> mohair.equal 'id', 7
     mohair.update 'project', {name: 'New name'}, ->
-        where -> mohair.eq 'id', 8
+        where -> mohair.equal 'id', 8
 ```
 
 `sql()` returns:
