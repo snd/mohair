@@ -159,6 +159,34 @@ DELETE FROM project WHERE id = ? AND hidden = ?;
 [7, true]
 ```
 
+### transactions
+
+```coffeescript
+mohair = {transaction, where, sql, params} = require('mohair')()
+
+transaction ->
+    mohair.delete 'project', ->
+        where -> mohair.eq 'id', 7
+    mohair.update 'project', {name: 'New name'}, ->
+        where -> mohair.eq 'id', 8
+```
+
+`sql()` returns:
+
+```sql
+START TRANSACTION;
+DELETE FROM project WHERE id = ?;
+UPDATE project SET name = ? WHERE id = ?;
+COMMIT;
+```
+
+`params()` returns:
+
+```coffeescript
+[7, 'New name', 8]
+```
+
+
 ## Examples
 
 ### use it with node-mysql
