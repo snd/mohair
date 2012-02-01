@@ -2,7 +2,7 @@
 
 sql query builder for nodejs
 
-**very much work in progress!**
+**very early alpha, the api will most likely change a lot!**
 
 ## Usage
 
