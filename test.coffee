@@ -2,7 +2,7 @@ mohair = require './lib/mohair'
 
 module.exports =
     'raw':
-        'without parameter bindings': (test) ->
+        'without bindings': (test) ->
             string = 'SELECT * FROM project;'
 
             m = mohair()
@@ -11,7 +11,7 @@ module.exports =
             test.equals m.sql(), string
             test.done()
 
-        'with parameter bindings': (test) ->
+        'with bindings': (test) ->
             string = 'SELECT * FROM project WHERE id = ? AND owner_id = ?;'
 
             m = mohair()
@@ -32,7 +32,7 @@ module.exports =
 
     'insert':
 
-        'parameter bindings': (test) ->
+        'bindings': (test) ->
             m = mohair()
             m.insert 'project',
                 name: 'Amazing Project'
@@ -43,7 +43,7 @@ module.exports =
             test.deepEqual m.params(), ['Amazing Project', 5, false]
             test.done()
 
-        'raw values': (test) ->
+        'bindings and raw': (test) ->
             m = mohair()
             m.insert 'project',
                 name: 'Another Project'
