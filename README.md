@@ -81,7 +81,7 @@ SELECT * FROM `project`;
 ```coffeescript
 mohair = {select, where, sql, params} = require('mohair')()
 
-select 'project', ['name', 'id'], -> where 'hidden' ,true
+select 'project', ['name', 'id'], -> where 'hidden', true
 ```
 
 `sql()` returns:
