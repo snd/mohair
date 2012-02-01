@@ -23,6 +23,20 @@ mohair = class
 
         @raw ");\n"
 
+    update: (table, changes, inner) ->
+        @raw "UPDATE #{table} SET "
+        isFirstValue = true
+        _.each changes, (value, column) =>
+            @raw ', ' if not isFirstValue
+            isFirstValue = false
+            @raw "#{column} = "
+            if _.isFunction(value) then value() else
+                @raw '?'
+                @_params.push value
+
+        inner()
+        @raw ';\n'
+
     equal: (column, bindingOrFunction) ->
         @raw "#{column} = "
         if _.isFunction(bindingOrFunction) then bindingOrFunction() else
