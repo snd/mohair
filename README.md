@@ -6,8 +6,8 @@ sql query builder for nodejs
 
 ### Features
 
-- makes building common queries much easier
-- fallback to plain sql is always possible for more exotic queries
+- build common queries easily
+- fall back to plain sql for more exotic queries
 
 ### Advantages over writing mysql queries by hand
 
