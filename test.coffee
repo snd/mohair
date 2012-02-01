@@ -22,7 +22,6 @@ module.exports =
             test.done()
 
         'twice': (test) ->
-
             m = mohair()
             m.raw 'SELECT * FROM project WHERE id = ?;', 7
             m.raw 'SELECT * FROM project WHERE id = ?;', 4
@@ -32,8 +31,8 @@ module.exports =
             test.done()
 
     'insert':
-        'parameter bindings': (test) ->
 
+        'parameter bindings': (test) ->
             m = mohair()
             m.insert 'project',
                 name: 'Amazing Project'
@@ -45,7 +44,6 @@ module.exports =
             test.done()
 
         'raw values': (test) ->
-
             m = mohair()
             m.insert 'project',
                 name: 'Another Project'
