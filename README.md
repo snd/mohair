@@ -185,7 +185,25 @@ COMMIT;
 ```coffeescript
 [7, 'New name', 8]
 ```
+### fallback to raw sql with optional parameter bindings
 
+```coffeescript
+{raw, sql, params} = require('mohair')()
+
+raw 'SELECT * FROM project WHERE id = ?;', 7
+```
+
+`sql()` returns:
+
+```sql
+SELECT * FROM project WHERE id = ?;
+```
+
+`params()` returns:
+
+```coffeescript
+[7]
+```
 
 ## Examples
 
