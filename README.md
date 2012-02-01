@@ -49,5 +49,5 @@ insert 'project',
     hidden: false
 
 client.query sql(), params(), (err, result) ->
-    ...
+    console.log result
 ```
