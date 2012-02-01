@@ -125,6 +125,30 @@ GROUP BY project.id;
 []
 ```
 
+### delete
+
+```coffeescript
+mohair = {delete, where, sql, params} = require('mohair')()
+
+delete 'project', ->
+    where ->
+        mohair.eq 'id', 7
+        mohair.and()
+        mohair.eq 'hidden', true
+```
+
+`sql()` returns:
+
+```sql
+DELETE FROM project WHERE id = ? AND hidden = ?;
+```
+
+`params()` returns:
+
+```coffeescript
+[7, true]
+```
+
 ## Examples
 
 ### use it with node-mysql
