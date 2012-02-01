@@ -30,3 +30,27 @@ module.exports =
             test.equals m.sql(), 'SELECT * FROM project WHERE id = ?;SELECT * FROM project WHERE id = ?;'
             test.deepEqual m.params(), [7, 4]
             test.done()
+
+    'insert':
+        'parameter bindings': (test) ->
+
+            m = mohair()
+            m.insert 'project',
+                name: 'Amazing Project'
+                owner_id: 5
+                hidden: false
+
+            test.equals m.sql(), 'INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);'
+            test.deepEqual m.params(), ['Amazing Project', 5, false]
+            test.done()
+
+        'raw values': (test) ->
+
+            m = mohair()
+            m.insert 'project',
+                name: 'Another Project'
+                created_on: -> m.raw 'NOW()'
+
+            test.equals m.sql(), 'INSERT INTO project (name, created_on) VALUES (?, NOW());'
+            test.deepEqual m.params(), ['Another Project']
+            test.done()
