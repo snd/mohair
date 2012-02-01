@@ -20,7 +20,7 @@ insert 'project',
 `sql()` returns:
 
 ```sql
-INSERT INTO `project` (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?);
+INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
 ```
 
 `params()` returns:
