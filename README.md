@@ -76,6 +76,26 @@ SELECT * FROM `project`;
 []
 ```
 
+#### explicit column list and where clause
+
+```coffeescript
+mohair = {select, where, sql, params} = require('mohair')()
+
+select 'project', ['name', 'id'], -> where 'hidden' ,true
+```
+
+`sql()` returns:
+
+```sql
+SELECT `name`, `id` FROM `project` WHERE `hidden` = ?;
+```
+
+`params()` returns:
+
+```coffeescript
+[true]
+```
+
 ## Examples
 
 ### use it with node-mysql
