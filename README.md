@@ -139,11 +139,11 @@ SELECT name, id FROM project WHERE hidden = ?;
 mohair = {select, join, group, sql, params} = require('mohair')()
 
 select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
-    join.left 'task', 'project.id' , 'task.project_id'
+    leftJoin 'task', 'project.id' , 'task.project_id'
     group 'project.id'
 ```
 
-**Note:** use `join`, `join.left`, `join.right`, and `join.inner` as needed.
+**Note:** use `join`, `leftJoin`, `rightJoin`, and `innerJoin` as needed.
 
 `sql()` returns:
 
