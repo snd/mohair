@@ -1,5 +1,7 @@
 _ = require 'underscore'
 
+assert = require 'assert'
+
 mohair = class
 
     constructor: ->
@@ -12,18 +14,30 @@ mohair = class
 
     quoted: (string) -> @raw "'#{string}'"
 
-    insert: (table, object) ->
-        @raw "INSERT INTO #{table} (#{_.keys(object).join(', ')}) VALUES ("
+    insert: (table, objects...) ->
+        keys = _.keys _.first objects
+        @raw "INSERT INTO #{table} (#{keys.join(', ')}) VALUES "
 
-        isFirstValue = true
-        _.each _.values(object), (value) =>
-            @raw ', ' if not isFirstValue
-            isFirstValue = false
-            if _.isFunction(value) then value() else
-                @raw '?'
-                @_params.push value
+        isFirstObject = true
+        _.each objects, (object) =>
+            assert.deepEqual keys,  _.keys(object), 'objects must have the same keys'
 
-        @raw ");\n"
+            @raw ', ' if not isFirstObject
+            isFirstObject = false
+
+            @raw '('
+
+            isFirstValue = true
+            _.each _.values(object), (value) =>
+                @raw ', ' if not isFirstValue
+                isFirstValue = false
+                if _.isFunction(value) then value() else
+                    @raw '?'
+                    @_params.push value
+
+            @raw ')'
+
+        @raw ";\n"
 
     update: (table, changes, inner) ->
         @raw "UPDATE #{table} SET "

@@ -27,6 +27,8 @@ insert 'project',
     hidden: false
 ```
 
+**Note:** you can insert multiple rows by passing multiple objects to insert. **they must have the same keys!**
+
 `sql()` returns:
 
 ```sql

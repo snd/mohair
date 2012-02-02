@@ -53,6 +53,20 @@ module.exports =
             test.deepEqual m.params(), ['Another Project']
             test.done()
 
+        'multiple': (test) ->
+            m = mohair()
+            m.insert 'project', {
+                name: 'First Project'
+                created_on: -> m.raw 'NOW()'
+            }, {
+                name: 'Second Project'
+                created_on: '1988.09.11'
+            }
+
+            test.equals m.sql(), 'INSERT INTO project (name, created_on) VALUES (?, NOW()), (?, ?);\n'
+            test.deepEqual m.params(), ['First Project', 'Second Project', '1988.09.11']
+            test.done()
+
     'Is':
 
         'bindings': (test) ->
