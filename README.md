@@ -136,7 +136,7 @@ SELECT name, id FROM project WHERE hidden = ?;
 #### join and group by
 
 ```coffeescript
-mohair = {select, join, group, sql, params} = require('mohair')()
+mohair = {select, leftJoin, group, sql, params} = require('mohair')()
 
 select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
     leftJoin 'task', 'project.id' , 'task.project_id'
