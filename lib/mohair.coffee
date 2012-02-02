@@ -10,6 +10,8 @@ mohair = class
         @_sql += sql
         @_params.push params...
 
+    quoted: (string) -> @raw "'#{string}'"
+
     insert: (table, object) ->
         @raw "INSERT INTO #{table} (#{_.keys(object).join(', ')}) VALUES ("
 
