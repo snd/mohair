@@ -56,9 +56,29 @@ mohair = class
         inner()
         @raw 'COMMIT;\n'
 
+    # inner
+
     where: (inner) ->
         @raw " WHERE "
         inner()
+
+    join: (table, leftColumn, rightColumn) ->
+        @raw " JOIN #{table} ON #{leftColumn} = #{rightColumn}"
+
+    leftJoin: (args...) ->
+        @raw " LEFT"
+        @join args...
+
+    rightJoin: (args...) ->
+        @raw " RIGHT"
+        @join args...
+
+    innerJoin: (args...) ->
+        @raw " INNER"
+        @join args...
+
+    group: (column) ->
+        @raw " GROUP BY #{column}"
 
     # conditions
 

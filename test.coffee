@@ -145,3 +145,14 @@ module.exports =
             test.equals m.sql(), 'SELECT name, id FROM project WHERE hidden = ?;\n'
             test.deepEqual m.params(), [true]
             test.done()
+
+        'join and group by': (test) ->
+            m = mohair()
+
+            m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
+                m.leftJoin 'task', 'project.id' , 'task.project_id'
+                m.group 'project.id'
+
+            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM project LEFT JOIN task ON project.id = task.project_id GROUP BY project.id;\n'
+            test.deepEqual m.params(), []
+            test.done()
