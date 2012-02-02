@@ -165,16 +165,16 @@ GROUP BY project.id;
 ### delete
 
 ```coffeescript
-mohair = {where, Is, And, sql, params} = require('mohair')()
+mohair = {where, Delete, Is, And, sql, params} = require('mohair')()
 
-mohair.delete 'project', ->
+Delete 'project', ->
     where ->
         Is 'id', 7
         And()
         Is 'hidden', true
 ```
 
-**Note:** `is`, `and` and `or` are keywords in coffeescript. use `Is`, `And` and `Or` instead.
+**Note:** `delete`, `is`, `and` and `or` are keywords in coffeescript. use `Delete`, `Is`, `And` and `Or` instead.
 
 `sql()` returns:
 
