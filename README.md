@@ -174,7 +174,7 @@ mohair.delete 'project', ->
         Is 'hidden', true
 ```
 
-**Note:** `and` and `or` are keywords in coffeescript. use `And` and `Or` instead.
+**Note:** `is`, `and` and `or` are keywords in coffeescript. use `Is`, `And` and `Or` instead.
 
 `sql()` returns:
 
