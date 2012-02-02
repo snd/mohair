@@ -66,14 +66,14 @@ INSERT INTO project (name, created_on) VALUES (?, NOW());
 ### update
 
 ```coffeescript
-mohair = {update, where, equal, sql, params} = require('mohair')()
+mohair = {update, where, Is, sql, params} = require('mohair')()
 
 changes =
     name: 'Even more amazing project'
     hidden: true
 
 update 'project', changes, ->
-    where -> equal 'id', 7
+    where -> Is 'id', 7
 ```
 
 `sql()` returns:
@@ -115,9 +115,10 @@ SELECT * FROM project;
 #### explicit column list and where clause
 
 ```coffeescript
-mohair = {select, where, sql, params} = require('mohair')()
+mohair = {select, where, Is, sql, params} = require('mohair')()
 
-select 'project', ['name', 'id'], -> where 'hidden', true
+select 'project', ['name', 'id'], ->
+    where -> Is 'hidden', true
 ```
 
 `sql()` returns:
@@ -164,14 +165,16 @@ GROUP BY project.id;
 ### delete
 
 ```coffeescript
-mohair = {where, equal, sql, params} = require('mohair')()
+mohair = {where, Is, And, sql, params} = require('mohair')()
 
 mohair.delete 'project', ->
     where ->
-        equal 'id', 7
-        mohair.and()
-        equal 'hidden', true
+        Is 'id', 7
+        And()
+        Is 'hidden', true
 ```
+
+**Note:** `and` and `or` are keywords in coffeescript. use `And` and `Or` instead.
 
 `sql()` returns:
 
