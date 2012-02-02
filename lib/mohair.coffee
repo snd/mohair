@@ -42,6 +42,11 @@ mohair = class
         inner()
         @raw ';\n'
 
+    transaction: (inner) ->
+        @raw 'START TRANSACTION;\n'
+        inner()
+        @raw 'COMMIT;\n'
+
     where: (inner) ->
         @raw " WHERE "
         inner()

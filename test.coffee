@@ -111,3 +111,16 @@ module.exports =
         test.equals m.sql(), 'DELETE FROM project WHERE id = ? AND hidden = ?;\n'
         test.deepEqual m.params(), [7, true]
         test.done()
+
+    'transaction': (test) ->
+        m = mohair()
+
+        m.transaction ->
+            m.Delete 'project', ->
+                m.where -> m.Is 'id', 7
+            m.update 'project', {name: 'New name'}, ->
+                m.where -> m.Is 'id', 8
+
+        test.equals m.sql(), 'START TRANSACTION;\nDELETE FROM project WHERE id = ?;\nUPDATE project SET name = ? WHERE id = ?;\nCOMMIT;\n'
+        test.deepEqual m.params(), [7, 'New name', 8]
+        test.done()
