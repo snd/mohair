@@ -191,12 +191,12 @@ DELETE FROM project WHERE id = ? AND hidden = ?;
 ### transactions
 
 ```coffeescript
-mohair = {transaction, where, Is, sql, params} = require('mohair')()
+mohair = {transaction, Delete, where, Is, sql, params} = require('mohair')()
 
 transaction ->
-    mohair.delete 'project', ->
+    Delete 'project', ->
         where -> Is 'id', 7
-    mohair.update 'project', {name: 'New name'}, ->
+    update 'project', {name: 'New name'}, ->
         where -> Is 'id', 8
 ```
 
