@@ -37,7 +37,7 @@ mohair = class
         inner()
         @raw ';\n'
 
-    delete: (table, inner) ->
+    Delete: (table, inner) ->
         @raw "DELETE FROM #{table}"
         inner()
 

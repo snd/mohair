@@ -86,7 +86,6 @@ module.exports =
             test.done()
 
         'bindings and raw': (test) ->
-
             m = mohair()
 
             changes =
@@ -100,16 +99,15 @@ module.exports =
             test.deepEqual m.params(), ['Even more amazing project', 7]
             test.done()
 
-    'delete': (test) ->
+    'Delete': (test) ->
+        m = mohair()
 
-            m = mohair()
+        m.Delete 'project', ->
+            m.where ->
+                m.Is 'id', 7
+                m.And()
+                m.Is 'hidden', true
 
-            m.delete 'project', ->
-                m.where ->
-                    m.Is 'id', 7
-                    m.And()
-                    m.Is 'hidden', true
-
-            test.equals m.sql(), 'DELETE FROM project WHERE id = ? AND hidden = ?'
-            test.deepEqual m.params(), [7, true]
-            test.done()
+        test.equals m.sql(), 'DELETE FROM project WHERE id = ? AND hidden = ?'
+        test.deepEqual m.params(), [7, true]
+        test.done()
