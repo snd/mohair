@@ -27,8 +27,6 @@ insert 'project',
     hidden: false
 ```
 
-**Note:** you can insert multiple rows by passing multiple objects **with identical keys** to insert: `insert, 'project', {name: 'First'}, {name: 'Second'}`
-
 `sql()` returns:
 
 ```sql
@@ -40,6 +38,8 @@ INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
 ```coffeescript
 ['Amazing Project', 5, false]
 ```
+
+**Note:** you can insert multiple rows by passing multiple objects **with identical keys** to insert: `insert, 'project', {name: 'First'}, {name: 'Second'}`
 
 #### raw values
 
