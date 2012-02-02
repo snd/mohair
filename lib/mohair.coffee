@@ -37,7 +37,7 @@ mohair = class
         inner()
         @raw ';\n'
 
-    equal: (column, bindingOrFunction) ->
+    Is: (column, bindingOrFunction) ->
         @raw "#{column} = "
         if _.isFunction(bindingOrFunction) then bindingOrFunction() else
             @raw '?'
