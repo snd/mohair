@@ -37,15 +37,23 @@ mohair = class
         inner()
         @raw ';\n'
 
+    delete: (table, inner) ->
+        @raw "DELETE FROM #{table}"
+        inner()
+
+    where: (inner) ->
+        @raw " WHERE "
+        inner()
+
+    # conditions
+
     Is: (column, bindingOrFunction) ->
         @raw "#{column} = "
         if _.isFunction(bindingOrFunction) then bindingOrFunction() else
             @raw '?'
             @_params.push bindingOrFunction
 
-    where: (inner) ->
-        @raw " WHERE "
-        inner()
+    And: -> @raw ' AND '
 
     # getters
 
