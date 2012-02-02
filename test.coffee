@@ -108,6 +108,6 @@ module.exports =
                 m.And()
                 m.Is 'hidden', true
 
-        test.equals m.sql(), 'DELETE FROM project WHERE id = ? AND hidden = ?'
+        test.equals m.sql(), 'DELETE FROM project WHERE id = ? AND hidden = ?;\n'
         test.deepEqual m.params(), [7, true]
         test.done()

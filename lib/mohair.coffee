@@ -40,6 +40,7 @@ mohair = class
     Delete: (table, inner) ->
         @raw "DELETE FROM #{table}"
         inner()
+        @raw ';\n'
 
     where: (inner) ->
         @raw " WHERE "
