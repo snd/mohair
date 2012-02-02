@@ -27,7 +27,7 @@ insert 'project',
     hidden: false
 ```
 
-**Note:** you can insert multiple rows by passing multiple objects to insert `insert, 'project', {name: 'First'}, {name: 'Second'}`. **they must have the same keys!**
+**Note:** you can insert multiple rows by passing multiple objects **with identical keys** to insert: `insert, 'project', {name: 'First'}, {name: 'Second'}`
 
 `sql()` returns:
 
