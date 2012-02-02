@@ -99,3 +99,17 @@ module.exports =
             test.equals m.sql(), 'UPDATE project SET name = ?, updated_on = NOW() WHERE id = ?;\n'
             test.deepEqual m.params(), ['Even more amazing project', 7]
             test.done()
+
+    'delete': (test) ->
+
+            m = mohair()
+
+            m.delete 'project', ->
+                m.where ->
+                    m.Is 'id', 7
+                    m.And()
+                    m.Is 'hidden', true
+
+            test.equals m.sql(), 'DELETE FROM project WHERE id = ? AND hidden = ?'
+            test.deepEqual m.params(), [7, true]
+            test.done()
