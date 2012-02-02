@@ -191,13 +191,13 @@ DELETE FROM project WHERE id = ? AND hidden = ?;
 ### transactions
 
 ```coffeescript
-mohair = {transaction, where, equal, sql, params} = require('mohair')()
+mohair = {transaction, where, Is, sql, params} = require('mohair')()
 
 transaction ->
     mohair.delete 'project', ->
-        where -> equal 'id', 7
+        where -> Is 'id', 7
     mohair.update 'project', {name: 'New name'}, ->
-        where -> equal 'id', 8
+        where -> Is 'id', 8
 ```
 
 `sql()` returns:
