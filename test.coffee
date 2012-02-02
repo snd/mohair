@@ -128,11 +128,20 @@ module.exports =
     'select':
 
         'implicit star': (test) ->
-
             m = mohair()
 
             m.select 'project'
 
             test.equals m.sql(), 'SELECT * FROM project;\n'
             test.deepEqual m.params(), []
+            test.done()
+
+        'explicit column list and where clause': (test) ->
+            m = mohair()
+
+            m.select 'project', ['name', 'id'], ->
+                m.where -> m.Is 'hidden', true
+
+            test.equals m.sql(), 'SELECT name, id FROM project WHERE hidden = ?;\n'
+            test.deepEqual m.params(), [true]
             test.done()
