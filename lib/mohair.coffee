@@ -42,6 +42,15 @@ mohair = class
         inner()
         @raw ';\n'
 
+    select: (table, columns, inner) ->
+        if not inner
+            inner = columns
+            columns = '*'
+        columns = columns.join(', ') if _.isArray columns
+        @raw "SELECT #{columns} FROM #{table}"
+        inner() if inner?
+        @raw ";\n"
+
     transaction: (inner) ->
         @raw 'START TRANSACTION;\n'
         inner()

@@ -124,3 +124,15 @@ module.exports =
         test.equals m.sql(), 'START TRANSACTION;\nDELETE FROM project WHERE id = ?;\nUPDATE project SET name = ? WHERE id = ?;\nCOMMIT;\n'
         test.deepEqual m.params(), [7, 'New name', 8]
         test.done()
+
+    'select':
+
+        'implicit star': (test) ->
+
+            m = mohair()
+
+            m.select 'project'
+
+            test.equals m.sql(), 'SELECT * FROM project;\n'
+            test.deepEqual m.params(), []
+            test.done()
