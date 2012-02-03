@@ -113,10 +113,10 @@ module.exports =
             test.deepEqual m.params(), ['Even more amazing project', 7]
             test.done()
 
-    'Delete': (test) ->
+    'remove': (test) ->
         m = mohair()
 
-        m.Delete 'project', ->
+        m.remove 'project', ->
             m.where ->
                 m.Is 'id', 7
                 m.And()
@@ -130,7 +130,7 @@ module.exports =
         m = mohair()
 
         m.transaction ->
-            m.Delete 'project', ->
+            m.remove 'project', ->
                 m.where -> m.Is 'id', 7
             m.update 'project', {name: 'New name'}, ->
                 m.where -> m.Is 'id', 8

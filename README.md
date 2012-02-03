@@ -184,19 +184,19 @@ ORDER BY project.created_on DESC;
 []
 ```
 
-### delete
+### delete (remove)
 
 ```coffeescript
-mohair = {where, Delete, Is, And, sql, params} = require('mohair')()
+mohair = {where, remove, Is, And, sql, params} = require('mohair')()
 
-Delete 'project', ->
+remove 'project', ->
     where ->
         Is 'id', 7
         And()
         Is 'hidden', true
 ```
 
-**Note:** `delete`, `is`, `and` and `or` are keywords in coffeescript. use `Delete`, `Is`, `And` and `Or` instead.
+**Note:** `delete` is a keyword in javascript. use `remove` instead!
 
 `sql()` returns:
 
@@ -213,10 +213,10 @@ DELETE FROM project WHERE id = ? AND hidden = ?;
 ### transactions
 
 ```coffeescript
-mohair = {transaction, Delete, where, Is, sql, params} = require('mohair')()
+mohair = {transaction, remove, where, Is, sql, params} = require('mohair')()
 
 transaction ->
-    Delete 'project', ->
+    remove 'project', ->
         where -> Is 'id', 7
     update 'project', {name: 'New name'}, ->
         where -> Is 'id', 8
