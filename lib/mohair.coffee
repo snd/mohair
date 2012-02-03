@@ -1,6 +1,6 @@
-_ = require 'underscore'
-
 assert = require 'assert'
+
+_ = require 'underscore'
 
 comparisonTable =
     '$ne': ' != '
