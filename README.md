@@ -153,14 +153,15 @@ SELECT name, id FROM project WHERE hidden = ?;
 [true]
 ```
 
-#### join and group by
+#### join, groupBy and orderBy
 
 ```coffeescript
-mohair = {select, leftJoin, group, sql, params} = require('mohair')()
+mohair = {select, leftJoin, groupBy, orderBy, sql, params} = require('mohair')()
 
 select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
     leftJoin 'task', 'project.id' , 'task.project_id'
-    group 'project.id'
+    groupBy 'project.id'
+    orderBy 'project.created_on DESC'
 ```
 
 **Note:** use `join`, `leftJoin`, `rightJoin`, and `innerJoin` as needed.
@@ -173,7 +174,8 @@ SELECT
     project.*
 FROM project
 LEFT JOIN task ON project.id = task.project_id
-GROUP BY project.id;
+GROUP BY project.id
+ORDER BY project.created_on DESC;
 ```
 
 `params()` returns:

@@ -93,8 +93,16 @@ mohair = class
         @raw " INNER"
         @join args...
 
-    group: (column) ->
+    groupBy: (column) ->
         @raw " GROUP BY #{column}"
+
+    orderBy: (sql) ->
+        @raw " ORDER BY #{sql}"
+
+    parens: (inner) ->
+        @raw '('
+        inner()
+        @raw ')'
 
     # conditions
 

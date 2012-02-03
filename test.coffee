@@ -160,13 +160,14 @@ module.exports =
             test.deepEqual m.params(), [true]
             test.done()
 
-        'join and group by': (test) ->
+        'join, groupBy and orderBy': (test) ->
             m = mohair()
 
             m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
                 m.leftJoin 'task', 'project.id' , 'task.project_id'
-                m.group 'project.id'
+                m.groupBy 'project.id'
+                m.orderBy 'project.created_on DESC'
 
-            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM project LEFT JOIN task ON project.id = task.project_id GROUP BY project.id;\n'
+            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM project LEFT JOIN task ON project.id = task.project_id GROUP BY project.id ORDER BY project.created_on DESC;\n'
             test.deepEqual m.params(), []
             test.done()
