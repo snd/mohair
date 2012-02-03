@@ -216,7 +216,6 @@ mohair = {transaction, remove, where, Is, sql, params} = require('mohair')()
 
 transaction ->
     remove 'project', {id: 7}
-        where -> Is 'id', 7
     update 'project', {name: 'New name'}, {id: 8}
 ```
 
