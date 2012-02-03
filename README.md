@@ -94,7 +94,7 @@ changes =
 
 update 'project', changes, {id: 7}
 ```
-**Note:** the last argument is a query object. see section `Query language` for details.
+**Note:** the last argument is a query object. see section `Query language` below for details.
 
 `sql()` returns:
 
@@ -140,7 +140,7 @@ mohair = {select, where, Is, sql, params} = require('mohair')()
 select 'project', ['name', 'id'], -> where {hidden: true}
 ```
 
-**Note:** `where` takes a query object. see section `Query language` for details.
+**Note:** `where` takes a query object. see section `Query language` below for details.
 
 `sql()` returns:
 
@@ -193,7 +193,7 @@ mohair = {where, remove, Is, And, sql, params} = require('mohair')()
 remove 'project', {id: 7, hidden: true}
 ```
 
-**Note:** the last argument is a query object. see section `Query language` for details.
+**Note:** the last argument is a query object. see section `Query language` below for details.
 
 **Note:** `delete` is a keyword in javascript. use `remove` instead!
 
