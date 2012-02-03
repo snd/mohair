@@ -318,6 +318,32 @@ cost >= ?
 
 ### $or
 
+the special key `$or` takes an array of query objects and generates a querystring
+where only one of the queries must match:
+
+```coffeescript
+{query, quoted, raw, sql, params} = require('mohair')()
+
+query
+    $or: [
+        {id: 7}
+        {name: -> quoted 'Another project'}
+        {owner_id: 10}
+    ]
+```
+
+`sql()` returns:
+
+```sql
+id = ? OR name = 'Another project' OR owner_id = ?
+```
+
+`params()` returns:
+
+```coffeescript
+[7, 10]
+```
+
 ### $and
 
 ## Use it with node-mysql
