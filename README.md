@@ -283,7 +283,33 @@ id = ? AND hidden = ? AND name = 'Another project'
 [7, true]
 ```
 
-### $ne
+### $ne, $lt, $lte, $gt, $gte
+
+you can change the default comparison operator '=' as follows:
+
+```coffeescript
+{query, quoted, raw, sql, params} = require('mohair')()
+
+query
+    id: 7
+    name: {$ne: -> quoted 'Another project'}
+    owner_id: {$lt: 10}
+    category_id: {$lte: 4}
+    deadline: {$gt: -> raw 'NOW()'}
+    cost: {$gte: 7000}
+```
+
+`sql()` returns:
+
+```sql
+id = ? AND name != 'Another project' AND owner_id < ? AND category_id <= 4 AND deadline > NOW() AND cost >= ?
+```
+
+`params()` returns:
+
+```coffeescript
+[7, 10, 4, 7000]
+```
 
 ### $or
 
