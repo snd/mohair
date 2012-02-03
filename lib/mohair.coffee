@@ -25,57 +25,44 @@ mohair = class
 
     insert: (table, objects...) ->
         keys = _.keys _.first objects
-        @raw "INSERT INTO #{table} (#{keys.join(', ')}) VALUES "
+        @command "INSERT INTO #{table} (#{keys.join(', ')}) VALUES ", =>
+            isFirstObject = true
+            _.each objects, (object) =>
+                assert.deepEqual keys, _.keys(object), 'objects must have the same keys'
 
-        isFirstObject = true
-        _.each objects, (object) =>
-            assert.deepEqual keys, _.keys(object), 'objects must have the same keys'
+                if isFirstObject then isFirstObject = false else @comma()
 
-            @raw ', ' if not isFirstObject
-            isFirstObject = false
-
-            @parens =>
-                isFirstValue = true
-                _.each _.values(object), (value) =>
-                    @raw ', ' if not isFirstValue
-                    isFirstValue = false
-                    @callOrBind value
-
-        @raw ";\n"
+                @parens =>
+                    isFirstValue = true
+                    _.each _.values(object), (value) =>
+                        if isFirstValue then isFirstValue = false else @comma()
+                        @callOrBind value
 
     update: (table, changes, funcOrQuery) ->
-        @raw "UPDATE #{table} SET "
-        isFirstValue = true
-        _.each changes, (value, column) =>
-            @raw ', ' if not isFirstValue
-            isFirstValue = false
-            @raw "#{column} = "
-            @callOrBind value
+        @command "UPDATE #{table} SET ", =>
+            isFirstValue = true
+            _.each changes, (value, column) =>
+                if isFirstValue then isFirstValue = false else @comma()
+                @raw "#{column} = "
+                @callOrBind value
 
-        @callOrQuery funcOrQuery
-        @raw ';\n'
+            @callOrQuery funcOrQuery
 
     remove: (table, funcOrQuery) ->
-        @raw "DELETE FROM #{table}"
-        @callOrQuery funcOrQuery
-        @raw ';\n'
+        @command "DELETE FROM #{table}", => @callOrQuery funcOrQuery
 
     select: (table, columns, funcOrQuery) ->
         if not funcOrQuery?
             funcOrQuery = columns
             columns = '*'
         columns = columns.join(', ') if _.isArray columns
-        @raw "SELECT #{columns} FROM #{table}"
-        @callOrQuery funcOrQuery if funcOrQuery?
-        @raw ";\n"
+        @command "SELECT #{columns} FROM #{table}", =>
+            @callOrQuery funcOrQuery if funcOrQuery?
 
     callOrQuery: (funcOrQuery) ->
         if _.isFunction funcOrQuery then funcOrQuery() else @where funcOrQuery
 
-    transaction: (inner) ->
-        @raw 'START TRANSACTION;\n'
-        inner()
-        @raw 'COMMIT;\n'
+    transaction: (inner) -> @around 'START TRANSACTION;\n', 'COMMIT;\n', inner
 
     # inner
 
@@ -92,11 +79,10 @@ mohair = class
                 @raw " AND " if not first
                 first = false
 
-                if key is '$or'
-                    @parens => @subqueryByOp 'OR', value
-                else if key is '$and'
-                    @subqueryByOp 'AND', value
+                if key is '$or' then @parens => @subqueryByOp 'OR', value
+                else if key is '$and' then @subqueryByOp 'AND', value
                 else
+
                     @raw key
 
                     if _.isObject(value) and not _.isFunction(value)
@@ -122,6 +108,9 @@ mohair = class
     callOrBind: (functionOrValue) ->
         if _.isFunction functionOrValue then functionOrValue() else @raw '?', functionOrValue
 
+    # joins
+    # -----
+
     join: (table, leftColumn, rightColumn) ->
         @raw " JOIN #{table} ON #{leftColumn} = #{rightColumn}"
 
@@ -137,18 +126,23 @@ mohair = class
         @raw " INNER"
         @join args...
 
-    groupBy: (column) ->
-        @raw " GROUP BY #{column}"
+    groupBy: (column) -> @raw " GROUP BY #{column}"
 
-    orderBy: (sql) ->
-        @raw " ORDER BY #{sql}"
+    orderBy: (sql) -> @raw " ORDER BY #{sql}"
 
-    parens: (inner) ->
-        @raw '('
-        inner()
-        @raw ')'
+    comma: -> @raw ', '
+
+    parens: (inner) -> @around '(', ')', inner
+
+    around: (start, end, inner) ->
+        @raw start
+        inner() if inner?
+        @raw end
+
+    command: (start, inner) -> @around start, ';\n', inner
 
     # getters
+    # -------
 
     sql: -> @_sql
 
