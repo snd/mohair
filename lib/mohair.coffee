@@ -62,7 +62,7 @@ mohair = class
 
     select: (table, columns, funcOrQuery) ->
         if not funcOrQuery?
-            inner = columns
+            funcOrQuery = columns
             columns = '*'
         columns = columns.join(', ') if _.isArray columns
         @raw "SELECT #{columns} FROM #{table}"
