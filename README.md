@@ -306,8 +306,8 @@ id = ? AND
 name != 'Another project' AND
 owner_id < ? AND
 category_id <= 4 AND
-deadline > NOW()
-AND cost >= ?
+deadline > NOW() AND
+cost >= ?
 ```
 
 `params()` returns:
