@@ -67,24 +67,6 @@ module.exports =
             test.deepEqual m.params(), ['First Project', 'Second Project', '1988.09.11']
             test.done()
 
-    'Is':
-
-        'bindings': (test) ->
-            m = mohair()
-            m.Is 'id', 7
-
-            test.equals m.sql(), 'id = ?'
-            test.deepEqual m.params(), [7]
-            test.done()
-
-        'raw': (test) ->
-            m = mohair()
-            m.Is 'id', -> m.raw 'owner_id'
-
-            test.equals m.sql(), 'id = owner_id'
-            test.deepEqual m.params(), []
-            test.done()
-
     'update':
         'bindings': (test) ->
             changes =
@@ -92,8 +74,7 @@ module.exports =
                 hidden: true
 
             m = mohair()
-            m.update 'project', changes, ->
-                m.where -> m.Is 'id', 7
+            m.update 'project', changes, {id: 7}
 
             test.equals m.sql(), 'UPDATE project SET name = ?, hidden = ? WHERE id = ?;\n'
             test.deepEqual m.params(), ['Even more amazing project', true, 7]
@@ -106,8 +87,7 @@ module.exports =
                 name: 'Even more amazing project'
                 updated_on: -> m.raw 'NOW()'
 
-            m.update 'project', changes, ->
-                m.where -> m.Is 'id', 7
+            m.update 'project', changes, {id: 7}
 
             test.equals m.sql(), 'UPDATE project SET name = ?, updated_on = NOW() WHERE id = ?;\n'
             test.deepEqual m.params(), ['Even more amazing project', 7]
@@ -116,11 +96,7 @@ module.exports =
     'remove': (test) ->
         m = mohair()
 
-        m.remove 'project', ->
-            m.where ->
-                m.Is 'id', 7
-                m.And()
-                m.Is 'hidden', true
+        m.remove 'project', {id: 7, hidden: true}
 
         test.equals m.sql(), 'DELETE FROM project WHERE id = ? AND hidden = ?;\n'
         test.deepEqual m.params(), [7, true]
@@ -130,10 +106,8 @@ module.exports =
         m = mohair()
 
         m.transaction ->
-            m.remove 'project', ->
-                m.where -> m.Is 'id', 7
-            m.update 'project', {name: 'New name'}, ->
-                m.where -> m.Is 'id', 8
+            m.remove 'project', {id: 7}
+            m.update 'project', {name: 'New name'}, {id: 8}
 
         test.equals m.sql(), 'START TRANSACTION;\nDELETE FROM project WHERE id = ?;\nUPDATE project SET name = ? WHERE id = ?;\nCOMMIT;\n'
         test.deepEqual m.params(), [7, 'New name', 8]
@@ -153,8 +127,7 @@ module.exports =
         'explicit column list and where clause': (test) ->
             m = mohair()
 
-            m.select 'project', ['name', 'id'], ->
-                m.where -> m.Is 'hidden', true
+            m.select 'project', ['name', 'id'], {hidden: true}
 
             test.equals m.sql(), 'SELECT name, id FROM project WHERE hidden = ?;\n'
             test.deepEqual m.params(), [true]
@@ -164,10 +137,73 @@ module.exports =
             m = mohair()
 
             m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
+                m.where {id: 7}
                 m.leftJoin 'task', 'project.id' , 'task.project_id'
                 m.groupBy 'project.id'
                 m.orderBy 'project.created_on DESC'
 
-            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM project LEFT JOIN task ON project.id = task.project_id GROUP BY project.id ORDER BY project.created_on DESC;\n'
-            test.deepEqual m.params(), []
+            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM project WHERE id = ? LEFT JOIN task ON project.id = task.project_id GROUP BY project.id ORDER BY project.created_on DESC;\n'
+            test.deepEqual m.params(), [7]
+            test.done()
+
+    'query':
+
+        'toplevel': (test) ->
+            m = mohair()
+
+            m.query
+                project_id: 6
+                hidden: true
+                name: -> m.quoted 'Another Project'
+
+            test.equals m.sql(), "project_id = ? AND hidden = ? AND name = 'Another Project'"
+            test.deepEqual m.params(), [6, true]
+            test.done()
+
+        '$or': (test) ->
+            m = mohair()
+
+            m.query
+                $or: [
+                    {project_id: 6}
+                    {hidden: true}
+                    {name: -> m.quoted 'Another Project'}
+                ]
+
+            test.equals m.sql(), "(project_id = ? OR hidden = ? OR name = 'Another Project')"
+            test.deepEqual m.params(), [6, true]
+            test.done()
+
+        'or and and': (test) ->
+            m = mohair()
+
+            m.query
+                project_id: 6
+                $or: [
+                    {hidden: true}
+                    {$and: [
+                        {name: -> m.quoted 'Another Project'}
+                        {owner_id: 8}
+                    ]}
+                ]
+
+            test.equals m.sql(), "project_id = ? AND (hidden = ? OR name = 'Another Project' AND owner_id = ?)"
+            test.deepEqual m.params(), [6, true, 8]
+            test.done()
+
+        'comparison operators': (test) ->
+            m = mohair()
+
+            m.query
+                project_id: {$lt: 6}
+                $or: [
+                    {hidden: true}
+                    {$and: [
+                        {name: {$ne: -> m.quoted 'Another Project'}}
+                        {owner_id: {$gte: 8}}
+                    ]}
+                ]
+
+            test.equals m.sql(), "project_id < ? AND (hidden = ? OR name != 'Another Project' AND owner_id >= ?)"
+            test.deepEqual m.params(), [6, true, 8]
             test.done()
