@@ -2,6 +2,15 @@ _ = require 'underscore'
 
 assert = require 'assert'
 
+comparisonTable =
+    '$ne': ' != '
+    '$lt': ' < '
+    '$lte': ' <= '
+    '$gt': ' > '
+    '$gte': ' >= '
+
+comparisons = _.keys comparisonTable
+
 mohair = class
 
     constructor: ->
@@ -25,47 +34,43 @@ mohair = class
             @raw ', ' if not isFirstObject
             isFirstObject = false
 
-            @raw '('
-
-            isFirstValue = true
-            _.each _.values(object), (value) =>
-                @raw ', ' if not isFirstValue
-                isFirstValue = false
-                if _.isFunction(value) then value() else
-                    @raw '?'
-                    @_params.push value
-
-            @raw ')'
+            @parens =>
+                isFirstValue = true
+                _.each _.values(object), (value) =>
+                    @raw ', ' if not isFirstValue
+                    isFirstValue = false
+                    @callOrBind value
 
         @raw ";\n"
 
-    update: (table, changes, inner) ->
+    update: (table, changes, funcOrQuery) ->
         @raw "UPDATE #{table} SET "
         isFirstValue = true
         _.each changes, (value, column) =>
             @raw ', ' if not isFirstValue
             isFirstValue = false
             @raw "#{column} = "
-            if _.isFunction(value) then value() else
-                @raw '?'
-                @_params.push value
+            @callOrBind value
 
-        inner()
+        @callOrQuery funcOrQuery
         @raw ';\n'
 
-    remove: (table, inner) ->
+    remove: (table, funcOrQuery) ->
         @raw "DELETE FROM #{table}"
-        inner()
+        @callOrQuery funcOrQuery
         @raw ';\n'
 
-    select: (table, columns, inner) ->
-        if not inner
+    select: (table, columns, funcOrQuery) ->
+        if not funcOrQuery?
             inner = columns
             columns = '*'
         columns = columns.join(', ') if _.isArray columns
         @raw "SELECT #{columns} FROM #{table}"
-        inner() if inner?
+        @callOrQuery funcOrQuery if funcOrQuery?
         @raw ";\n"
+
+    callOrQuery: (funcOrQuery) ->
+        if _.isFunction funcOrQuery then funcOrQuery() else @where funcOrQuery
 
     transaction: (inner) ->
         @raw 'START TRANSACTION;\n'
@@ -74,9 +79,48 @@ mohair = class
 
     # inner
 
-    where: (inner) ->
+    where: (functionOrQuery) ->
         @raw " WHERE "
-        inner()
+        if _.isFunction functionOrQuery then functionOrQuery()
+        else @query functionOrQuery
+
+    query: (query) -> @andQuery query
+
+    andQuery: (query) ->
+            first = true
+            _.each query, (value, key) =>
+                @raw " AND " if not first
+                first = false
+
+                if key is '$or'
+                    @parens => @subqueryByOp 'OR', value
+                else if key is '$and'
+                    @subqueryByOp 'AND', value
+                else
+                    @raw key
+
+                    if _.isObject(value) and not _.isFunction(value)
+                        intersection = _.intersection(comparisons, _.keys(value))
+                        comp = _.first intersection
+                        if comp?
+                            @raw comparisonTable[comp]
+                            @callOrBind value[comp]
+                        else
+                            @raw ' = '
+                            @callOrBind value
+                    else
+                        @raw ' = '
+                        @callOrBind value
+
+    subqueryByOp: (op, array) ->
+            first = true
+            _.each array, (object) =>
+                @raw " #{op} " if not first
+                first = false
+                @andQuery object
+
+    callOrBind: (functionOrValue) ->
+        if _.isFunction functionOrValue then functionOrValue() else @raw '?', functionOrValue
 
     join: (table, leftColumn, rightColumn) ->
         @raw " JOIN #{table} ON #{leftColumn} = #{rightColumn}"
@@ -103,16 +147,6 @@ mohair = class
         @raw '('
         inner()
         @raw ')'
-
-    # conditions
-
-    Is: (column, bindingOrFunction) ->
-        @raw "#{column} = "
-        if _.isFunction(bindingOrFunction) then bindingOrFunction() else
-            @raw '?'
-            @_params.push bindingOrFunction
-
-    And: -> @raw ' AND '
 
     # getters
 
