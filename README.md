@@ -44,8 +44,12 @@ INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
 ```coffeescript
 {insert, sql, params} = require('mohair')()
 
-insert 'project', {name: 'First project', hidden: true}, {name 'Second project', hidden: false}
+insert 'project',
+    {name: 'First project', hidden: true},
+    {name 'Second project', hidden: false}
 ```
+
+**Note:**All objects to be inserted must have the same keys.
 
 `sql()` returns:
 
