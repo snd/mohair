@@ -39,7 +39,25 @@ INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
 ['Amazing Project', 5, false]
 ```
 
-**Note:** you can insert multiple rows by passing multiple objects **with identical keys** to insert: `insert, 'project', {name: 'First'}, {name: 'Second'}`
+#### inserting multiple rows at once
+
+```coffeescript
+{insert, sql, params} = require('mohair')()
+
+insert 'project', {name: 'First project', hidden: true}, {name 'Second project', hidden: false}
+```
+
+`sql()` returns:
+
+```sql
+INSERT INTO project (name) VALUES (?, ?), (?, ?);
+```
+
+`params()` returns:
+
+```coffeescript
+['First project', true, 'Second project', false]
+```
 
 #### raw values
 
