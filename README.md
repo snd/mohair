@@ -367,7 +367,7 @@ query
 `sql()` returns:
 
 ```sql
-id = ? AND (owner_id = ? OR cost > ? AND cost < 1000)
+id = ? AND (owner_id = ? OR cost > ? AND cost < ?)
 ```
 
 `params()` returns:
