@@ -346,6 +346,36 @@ id = ? OR name = 'Another project' OR owner_id = ?
 
 ### $and
 
+the special key `$and` takes an array of query objects and generates a querystring
+where all of the queries must match.
+`$and` and `$or` can be nested:
+
+```coffeescript
+{query, quoted, raw, sql, params} = require('mohair')()
+
+query
+    id: 7
+    $or: [
+        {owner_id: 10}
+        $and: [
+            {cost: {$gt: 500}}
+            {cost: {$lt: 1000}
+        ]
+    ]
+```
+
+`sql()` returns:
+
+```sql
+id = ? AND (owner_id: ? OR cost > ? AND cost < 1000)
+```
+
+`params()` returns:
+
+```coffeescript
+[7, 10, 500, 1000]
+```
+
 ## Use it with node-mysql
 
 ```coffeescript
