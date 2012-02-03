@@ -207,3 +207,20 @@ module.exports =
             test.equals m.sql(), "project_id < ? AND (hidden = ? OR name != 'Another Project' AND owner_id >= ?)"
             test.deepEqual m.params(), [6, true, 8]
             test.done()
+
+        'nested query': (test) ->
+            m = mohair()
+
+            m.query
+                id: 7
+                $or: [
+                    {owner_id: 10}
+                    $and: [
+                        {cost: {$gt: 500}}
+                        {cost: {$lt: 1000}}
+                    ]
+                ]
+
+            test.equals m.sql(), "id = ? AND (owner_id = ? OR cost > ? AND cost < ?)"
+            test.deepEqual m.params(), [7, 10, 500, 1000]
+            test.done()
