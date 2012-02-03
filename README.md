@@ -359,7 +359,7 @@ query
         {owner_id: 10}
         $and: [
             {cost: {$gt: 500}}
-            {cost: {$lt: 1000}
+            {cost: {$lt: 1000}}
         ]
     ]
 ```
@@ -367,7 +367,7 @@ query
 `sql()` returns:
 
 ```sql
-id = ? AND (owner_id: ? OR cost > ? AND cost < 1000)
+id = ? AND (owner_id = ? OR cost > ? AND cost < 1000)
 ```
 
 `params()` returns:
