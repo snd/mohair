@@ -302,7 +302,12 @@ query
 `sql()` returns:
 
 ```sql
-id = ? AND name != 'Another project' AND owner_id < ? AND category_id <= 4 AND deadline > NOW() AND cost >= ?
+id = ? AND
+name != 'Another project' AND
+owner_id < ? AND
+category_id <= 4 AND
+deadline > NOW()
+AND cost >= ?
 ```
 
 `params()` returns:
