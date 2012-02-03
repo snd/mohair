@@ -46,7 +46,7 @@ INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
 
 insert 'project',
     {name: 'First project', hidden: true},
-    {name 'Second project', hidden: false}
+    {name: 'Second project', hidden: false}
 ```
 
 **Note:**All objects to be inserted must have the same keys.
