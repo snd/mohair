@@ -283,7 +283,7 @@ id = ? AND hidden = ? AND name = 'Another project'
 [7, true]
 ```
 
-### $ne, $lt, $lte, $gt, $gte
+### comparison operators
 
 you can change the default comparison operator '=' as follows:
 
@@ -314,8 +314,6 @@ id = ? AND name != 'Another project' AND owner_id < ? AND category_id <= 4 AND d
 ### $or
 
 ### $and
-
-### conditional operators
 
 ## Use it with node-mysql
 
