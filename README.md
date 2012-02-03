@@ -92,9 +92,9 @@ changes =
     name: 'Even more amazing project'
     hidden: true
 
-update 'project', changes, ->
-    where -> Is 'id', 7
+update 'project', changes, {id: 7}
 ```
+**Note:** the last argument is a query object. see section `Query language` for details.
 
 `sql()` returns:
 
@@ -137,9 +137,10 @@ SELECT * FROM project;
 ```coffeescript
 mohair = {select, where, Is, sql, params} = require('mohair')()
 
-select 'project', ['name', 'id'], ->
-    where -> Is 'hidden', true
+select 'project', ['name', 'id'], -> where {hidden: true}
 ```
+
+**Note:** `where` takes a query object. see section `Query language` for details.
 
 `sql()` returns:
 
@@ -189,12 +190,10 @@ ORDER BY project.created_on DESC;
 ```coffeescript
 mohair = {where, remove, Is, And, sql, params} = require('mohair')()
 
-remove 'project', ->
-    where ->
-        Is 'id', 7
-        And()
-        Is 'hidden', true
+remove 'project', {id: 7, hidden: true}
 ```
+
+**Note:** the last argument is a query object. see section `Query language` for details.
 
 **Note:** `delete` is a keyword in javascript. use `remove` instead!
 
@@ -216,10 +215,9 @@ DELETE FROM project WHERE id = ? AND hidden = ?;
 mohair = {transaction, remove, where, Is, sql, params} = require('mohair')()
 
 transaction ->
-    remove 'project', ->
+    remove 'project', {id: 7}
         where -> Is 'id', 7
-    update 'project', {name: 'New name'}, ->
-        where -> Is 'id', 8
+    update 'project', {name: 'New name'}, {id: 8}
 ```
 
 `sql()` returns:
