@@ -253,9 +253,45 @@ SELECT * FROM project WHERE id = ?;
 [7]
 ```
 
-## Examples
+## Query language
 
-### use it with node-mysql
+heavily inspired by the [mongo query language](http://www.mongodb.org/display/DOCS/Advanced+Queries)
+
+### query objects
+
+conditions are generated from query objects by using the keys as column names,
+binding or calling the values and interspersing 'AND':
+
+```coffeescript
+{query, quoted, sql, params} = require('mohair')()
+
+query
+    id: 7
+    hidden: true
+    name: -> quoted 'Another project'
+```
+
+`sql()` returns:
+
+```sql
+id = ? AND hidden = ? AND name = 'Another project'
+```
+
+`params()` returns:
+
+```coffeescript
+[7, true]
+```
+
+### $ne
+
+### $or
+
+### $and
+
+### conditional operators
+
+## Use it with node-mysql
 
 ```coffeescript
 
