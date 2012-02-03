@@ -29,7 +29,7 @@ mohair = class
 
         isFirstObject = true
         _.each objects, (object) =>
-            assert.deepEqual keys,  _.keys(object), 'objects must have the same keys'
+            assert.deepEqual keys, _.keys(object), 'objects must have the same keys'
 
             @raw ', ' if not isFirstObject
             isFirstObject = false
