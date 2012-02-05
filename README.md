@@ -2,8 +2,6 @@
 
 sql query builder for nodejs
 
-**very early alpha, the api will most likely change a lot!**
-
 ### Features
 
 - build common queries easily
