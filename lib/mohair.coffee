@@ -22,6 +22,13 @@ Mohair = class
         @_sql = ''
         @_params = []
 
+        @_queries =
+            $or: (x) => @parens => @subqueryByOp 'OR', x
+            $and: (x) => @subqueryByOp 'AND', x
+            $not: (x) =>
+                @raw 'NOT '
+                @parens => @query x
+
     sql: -> @_sql
 
     params: -> @_params
@@ -110,15 +117,9 @@ Mohair = class
 
     query: (query) ->
             @intersperse ' AND ', query, (value, key) =>
-                if key is '$or'
-                    @parens => @subqueryByOp 'OR', value
-                    return
-                if key is '$and'
-                    @subqueryByOp 'AND', value
-                    return
-                if key is '$not'
-                    @raw 'NOT '
-                    @parens => @query value
+                special = @_queries[key]
+                if  special?
+                    special value
                     return
 
                 @raw key
