@@ -23,11 +23,13 @@ mohair = class
 
     quoted: (string) -> @raw "'#{string}'"
 
-    commaSeparated: (list, f) ->
+    intersperse: (string, list, f) ->
         first = true
         _.each list, (v, k) =>
-            if first then first = false else @comma()
+            if first then first = false else @raw string
             f v, k
+
+    commaSeparated: (args...) -> @intersperse ', ', args...
 
     insert: (table, objects...) ->
         keys = _.keys _.first objects
@@ -67,11 +69,7 @@ mohair = class
         if _.isFunction f then f() else @query f
 
     query: (query) ->
-            first = true
-            _.each query, (value, key) =>
-                @raw " AND " if not first
-                first = false
-
+            @intersperse ' AND ', query, (value, key) =>
                 if key is '$or' then @parens => @subqueryByOp 'OR', value
                 else if key is '$and' then @subqueryByOp 'AND', value
                 else
