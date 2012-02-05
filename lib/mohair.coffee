@@ -114,8 +114,6 @@ mohair = class
 
     orderBy: (sql) -> @raw " ORDER BY #{sql}"
 
-    comma: -> @raw ', '
-
     parens: (inner) -> @around '(', ')', inner
 
     around: (start, end, inner) ->
