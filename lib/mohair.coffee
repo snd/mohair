@@ -11,18 +11,27 @@ comparisonTable =
 
 comparisons = _.keys comparisonTable
 
-mohair = class
+comma = ', '
+
+Mohair = class
+
+    # Core
+    # ====
 
     constructor: ->
         @_sql = ''
         @_params = []
 
-    # Base
-    # ====
+    sql: -> @_sql
+
+    params: -> @_params
 
     raw: (sql, params...) ->
         @_sql += sql
         @_params.push params...
+
+    # Helpers
+    # =======
 
     quoted: (string) -> @raw "'#{string}'"
 
@@ -32,20 +41,18 @@ mohair = class
             if first then first = false else @raw string
             f v, k
 
-    commaSeparated: (args...) -> @intersperse ', ', args...
-
-    parens: (inner) -> @around '(', ')', inner
-
     around: (start, end, inner) ->
         @raw start
         inner() if inner?
         @raw end
 
+    parens: (inner) -> @around '(', ')', inner
+
     command: (start, inner) -> @around start, ';\n', inner
 
     callOrQuery: (f) -> if _.isFunction f then f() else @where f
 
-    callOrBind: (f) -> if _.isFunction f then f() else @raw '?', f
+    callOrBind: (f) => if _.isFunction f then f() else @raw '?', f
 
     # Interface
     # =========
@@ -53,15 +60,15 @@ mohair = class
     insert: (table, objects...) ->
         keys = _.keys _.first objects
         @command "INSERT INTO #{table} (#{keys.join(', ')}) VALUES ", =>
-            @commaSeparated objects, (object, index) =>
-                assert.deepEqual keys, _.keys(object), 'objects must have the same keys'
+            @intersperse comma, objects, (object, index) =>
+                assert.deepEqual keys, _.keys(object),
+                    'objects must have the same keys'
 
-                @parens =>
-                    @commaSeparated _.values(object), (value) => @callOrBind value
+                @parens => @intersperse comma, _.values(object), @callOrBind
 
     update: (table, changes, funcOrQuery) ->
         @command "UPDATE #{table} SET ", =>
-            @commaSeparated changes, (value, column) =>
+            @intersperse comma, changes, (value, column) =>
                 @raw "#{column} = "
                 @callOrBind value
 
@@ -86,7 +93,6 @@ mohair = class
         @raw " WHERE "
         if _.isFunction f then f() else @query f
 
-
     _join: (prefix, table, left, right) ->
         @raw "#{prefix} JOIN #{table} ON #{left} = #{right}"
 
@@ -104,38 +110,31 @@ mohair = class
 
     query: (query) ->
             @intersperse ' AND ', query, (value, key) =>
-                if key is '$or' then @parens => @subqueryByOp 'OR', value
-                else if key is '$and' then @subqueryByOp 'AND', value
-                else
+                if key is '$or'
+                    @parens => @subqueryByOp 'OR', value
+                    return
+                if key is '$and'
+                    @subqueryByOp 'AND', value
+                    return
 
-                    @raw key
+                @raw key
 
-                    if _.isObject(value) and not _.isFunction(value)
-                        intersection = _.intersection(comparisons, _.keys(value))
-                        comp = _.first intersection
-                        if comp?
-                            @raw comparisonTable[comp]
-                            @callOrBind value[comp]
-                        else if value.$in?
-                            @raw ' IN '
-                            @parens =>
-                                array = value.$in
-                                string = _.map([0...array.length], -> '?').join(', ')
-                                @raw string, array...
-                        else
-                            @raw ' = '
-                            @callOrBind value
-                    else
-                        @raw ' = '
-                        @callOrBind value
+                if not _.isObject(value) or _.isFunction(value)
+                    @raw ' = '
+                    @callOrBind value
+                    return
+
+                comp = _.first _.intersection comparisons, _.keys value
+                if comp?
+                    @raw comparisonTable[comp]
+                    @callOrBind value[comp]
+                else if value.$in?
+                    @raw ' IN '
+                    @parens =>
+                        array = value.$in
+                        string = _.map([0...array.length], -> '?').join(', ')
+                        @raw string, array...
 
     subqueryByOp: (op, list) -> @intersperse " #{op} ", list, (x) => @query x
 
-    # Getters
-    # =======
-
-    sql: -> @_sql
-
-    params: -> @_params
-
-module.exports = -> new mohair
+module.exports = -> new Mohair
