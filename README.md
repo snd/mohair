@@ -409,7 +409,7 @@ negate a query.
 {query, quoted, raw, sql, params} = require('mohair')()
 
 query
-    $not: {$in: [3, 5, 8, 9]}
+    $not: {id: {$in: [3, 5, 8, 9]}}
 ```
 
 `sql()` returns:
