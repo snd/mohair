@@ -401,6 +401,29 @@ id IN (?, ?, ?, ?)
 [3, 5, 8, 9]
 ```
 
+### $not
+
+negate a query.
+
+```coffeescript
+{query, quoted, raw, sql, params} = require('mohair')()
+
+query
+    $not: {$in: [3, 5, 8, 9]}
+```
+
+`sql()` returns:
+
+```sql
+NOT (id IN (?, ?, ?, ?))
+```
+
+`params()` returns:
+
+```coffeescript
+[3, 5, 8, 9]
+```
+
 ## Use it with node-mysql
 
 ```coffeescript

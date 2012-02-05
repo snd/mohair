@@ -116,6 +116,10 @@ Mohair = class
                 if key is '$and'
                     @subqueryByOp 'AND', value
                     return
+                if key is '$not'
+                    @raw 'NOT '
+                    @parens => @query value
+                    return
 
                 @raw key
 
