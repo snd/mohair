@@ -95,12 +95,7 @@ mohair = class
                         @raw ' = '
                         @callOrBind value
 
-    subqueryByOp: (op, array) ->
-            first = true
-            _.each array, (object) =>
-                @raw " #{op} " if not first
-                first = false
-                @query object
+    subqueryByOp: (op, list) -> @intersperse " #{op} ", list, (x) => @query x
 
     callOrBind: (f) -> if _.isFunction f then f() else @raw '?', f
 
