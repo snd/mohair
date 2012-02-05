@@ -106,8 +106,7 @@ mohair = class
                 first = false
                 @query object
 
-    callOrBind: (functionOrValue) ->
-        if _.isFunction functionOrValue then functionOrValue() else @raw '?', functionOrValue
+    callOrBind: (f) -> if _.isFunction f then f() else @raw '?', f
 
     # joins
     # -----
