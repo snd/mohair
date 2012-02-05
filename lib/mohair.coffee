@@ -71,9 +71,7 @@ mohair = class
         if _.isFunction functionOrQuery then functionOrQuery()
         else @query functionOrQuery
 
-    query: (query) -> @andQuery query
-
-    andQuery: (query) ->
+    query: (query) ->
             first = true
             _.each query, (value, key) =>
                 @raw " AND " if not first
@@ -109,7 +107,7 @@ mohair = class
             _.each array, (object) =>
                 @raw " #{op} " if not first
                 first = false
-                @andQuery object
+                @query object
 
     callOrBind: (functionOrValue) ->
         if _.isFunction functionOrValue then functionOrValue() else @raw '?', functionOrValue
