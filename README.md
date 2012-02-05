@@ -47,7 +47,7 @@ insert 'project',
     {name: 'Second project', hidden: false}
 ```
 
-**Note:**All objects to be inserted must have the same keys.
+**Note:** All objects to be inserted must have the same keys.
 
 `sql()` returns:
 
