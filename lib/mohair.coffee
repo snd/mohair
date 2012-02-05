@@ -28,7 +28,6 @@ mohair = class
         _.each list, (v, k) =>
             if first then first = false else @comma()
             f v, k
-            first = false
 
     insert: (table, objects...) ->
         keys = _.keys _.first objects
