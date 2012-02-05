@@ -23,26 +23,25 @@ mohair = class
 
     quoted: (string) -> @raw "'#{string}'"
 
+    commaSeperated: (list, f) ->
+        first = true
+        _.each list, (v, k) =>
+            if first then first = false else @comma()
+            f v, k
+            first = false
+
     insert: (table, objects...) ->
         keys = _.keys _.first objects
         @command "INSERT INTO #{table} (#{keys.join(', ')}) VALUES ", =>
-            isFirstObject = true
-            _.each objects, (object) =>
+            @commaSeperated objects, (object, index) =>
                 assert.deepEqual keys, _.keys(object), 'objects must have the same keys'
 
-                if isFirstObject then isFirstObject = false else @comma()
-
                 @parens =>
-                    isFirstValue = true
-                    _.each _.values(object), (value) =>
-                        if isFirstValue then isFirstValue = false else @comma()
-                        @callOrBind value
+                    @commaSeperated _.values(object), (value) => @callOrBind value
 
     update: (table, changes, funcOrQuery) ->
         @command "UPDATE #{table} SET ", =>
-            isFirstValue = true
-            _.each changes, (value, column) =>
-                if isFirstValue then isFirstValue = false else @comma()
+            @commaSeperated changes, (value, column) =>
                 @raw "#{column} = "
                 @callOrBind value
 
