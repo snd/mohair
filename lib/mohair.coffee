@@ -59,17 +59,15 @@ mohair = class
         @command "SELECT #{columns} FROM #{table}", =>
             @callOrQuery funcOrQuery if funcOrQuery?
 
-    callOrQuery: (funcOrQuery) ->
-        if _.isFunction funcOrQuery then funcOrQuery() else @where funcOrQuery
+    callOrQuery: (f) -> if _.isFunction f then f() else @where f
 
     transaction: (inner) -> @around 'START TRANSACTION;\n', 'COMMIT;\n', inner
 
     # inner
 
-    where: (functionOrQuery) ->
+    where: (f) ->
         @raw " WHERE "
-        if _.isFunction functionOrQuery then functionOrQuery()
-        else @query functionOrQuery
+        if _.isFunction f then f() else @query f
 
     query: (query) ->
             first = true
