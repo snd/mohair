@@ -17,6 +17,9 @@ mohair = class
         @_sql = ''
         @_params = []
 
+    # Base
+    # ====
+
     raw: (sql, params...) ->
         @_sql += sql
         @_params.push params...
@@ -30,6 +33,22 @@ mohair = class
             f v, k
 
     commaSeparated: (args...) -> @intersperse ', ', args...
+
+    parens: (inner) -> @around '(', ')', inner
+
+    around: (start, end, inner) ->
+        @raw start
+        inner() if inner?
+        @raw end
+
+    command: (start, inner) -> @around start, ';\n', inner
+
+    callOrQuery: (f) -> if _.isFunction f then f() else @where f
+
+    callOrBind: (f) -> if _.isFunction f then f() else @raw '?', f
+
+    # Interface
+    # =========
 
     insert: (table, objects...) ->
         keys = _.keys _.first objects
@@ -58,15 +77,30 @@ mohair = class
         @command "SELECT #{columns} FROM #{table}", =>
             @callOrQuery funcOrQuery if funcOrQuery?
 
-    callOrQuery: (f) -> if _.isFunction f then f() else @where f
-
     transaction: (inner) -> @around 'START TRANSACTION;\n', 'COMMIT;\n', inner
 
-    # inner
+    # Select inner
+    # ------------
 
     where: (f) ->
         @raw " WHERE "
         if _.isFunction f then f() else @query f
+
+
+    _join: (prefix, table, left, right) ->
+        @raw "#{prefix} JOIN #{table} ON #{left} = #{right}"
+
+    join: (args...) -> @_join '', args...
+    leftJoin: (args...) -> @_join ' LEFT', args...
+    rightJoin: (args...) -> @_join ' RIGHT', args...
+    innerJoin: (args...) -> @_join ' INNER', args...
+
+    groupBy: (column) -> @raw " GROUP BY #{column}"
+
+    orderBy: (sql) -> @raw " ORDER BY #{sql}"
+
+    # Query
+    # =====
 
     query: (query) ->
             @intersperse ' AND ', query, (value, key) =>
@@ -97,34 +131,8 @@ mohair = class
 
     subqueryByOp: (op, list) -> @intersperse " #{op} ", list, (x) => @query x
 
-    callOrBind: (f) -> if _.isFunction f then f() else @raw '?', f
-
-    # joins
-    # -----
-
-    _join: (prefix, table, left, right) ->
-        @raw "#{prefix} JOIN #{table} ON #{left} = #{right}"
-
-    join: (args...) -> @_join '', args...
-    leftJoin: (args...) -> @_join ' LEFT', args...
-    rightJoin: (args...) -> @_join ' RIGHT', args...
-    innerJoin: (args...) -> @_join ' INNER', args...
-
-    groupBy: (column) -> @raw " GROUP BY #{column}"
-
-    orderBy: (sql) -> @raw " ORDER BY #{sql}"
-
-    parens: (inner) -> @around '(', ')', inner
-
-    around: (start, end, inner) ->
-        @raw start
-        inner() if inner?
-        @raw end
-
-    command: (start, inner) -> @around start, ';\n', inner
-
-    # getters
-    # -------
+    # Getters
+    # =======
 
     sql: -> @_sql
 
