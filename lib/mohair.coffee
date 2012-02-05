@@ -91,6 +91,12 @@ mohair = class
                         if comp?
                             @raw comparisonTable[comp]
                             @callOrBind value[comp]
+                        else if value.$in?
+                            @raw ' IN '
+                            @parens =>
+                                array = value.$in
+                                string = _.map([0...array.length], -> '?').join(', ')
+                                @raw string, array...
                         else
                             @raw ' = '
                             @callOrBind value

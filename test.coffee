@@ -224,3 +224,15 @@ module.exports =
             test.equals m.sql(), "id = ? AND (owner_id = ? OR cost > ? AND cost < ?)"
             test.deepEqual m.params(), [7, 10, 500, 1000]
             test.done()
+
+        '$in': (test) ->
+            m = mohair()
+
+            m.query
+                id: {$in: [3, 5, 8, 9]}
+                owner_id: {$in: [10]}
+                name: {$in: ['Ann', 'Rick']}
+
+            test.equals m.sql(), 'id IN (?, ?, ?, ?) AND owner_id IN (?) AND name IN (?, ?)'
+            test.deepEqual m.params(), [3, 5, 8, 9, 10, 'Ann', 'Rick']
+            test.done()

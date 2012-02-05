@@ -380,6 +380,29 @@ id = ? AND (owner_id = ? OR cost > ? AND cost < ?)
 [7, 10, 500, 1000]
 ```
 
+### $in
+
+select rows where column `id` has one of the values: `3, 5, 8, 9`:
+
+```coffeescript
+{query, quoted, raw, sql, params} = require('mohair')()
+
+query
+    id: {$in: [3, 5, 8, 9]}
+```
+
+`sql()` returns:
+
+```sql
+id IN (?, ?, ?, ?)
+```
+
+`params()` returns:
+
+```coffeescript
+[3, 5, 8, 9]
+```
+
 ## Use it with node-mysql
 
 ```coffeescript
