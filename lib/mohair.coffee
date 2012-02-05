@@ -115,20 +115,13 @@ mohair = class
     # joins
     # -----
 
-    join: (table, leftColumn, rightColumn) ->
-        @raw " JOIN #{table} ON #{leftColumn} = #{rightColumn}"
+    _join: (prefix, table, left, right) ->
+        @raw "#{prefix} JOIN #{table} ON #{left} = #{right}"
 
-    leftJoin: (args...) ->
-        @raw " LEFT"
-        @join args...
-
-    rightJoin: (args...) ->
-        @raw " RIGHT"
-        @join args...
-
-    innerJoin: (args...) ->
-        @raw " INNER"
-        @join args...
+    join: (args...) -> @_join '', args...
+    leftJoin: (args...) -> @_join ' LEFT', args...
+    rightJoin: (args...) -> @_join ' RIGHT', args...
+    innerJoin: (args...) -> @_join ' INNER', args...
 
     groupBy: (column) -> @raw " GROUP BY #{column}"
 
