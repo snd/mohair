@@ -48,8 +48,7 @@ mohair = class
 
             @callOrQuery funcOrQuery
 
-    remove: (table, funcOrQuery) ->
-        @command "DELETE FROM #{table}", => @callOrQuery funcOrQuery
+    remove: (table, f) -> @command "DELETE FROM #{table}", => @callOrQuery f
 
     select: (table, columns, funcOrQuery) ->
         if not funcOrQuery?
