@@ -24,14 +24,10 @@ Mohair = class
         @_queryModifiers =
             $or: (q) => @parens => @subqueryByOp 'OR', q
             $and: (q) => @subqueryByOp 'AND', q
-            $not: (q) =>
-                @raw 'NOT '
-                @parens => @query q
+            $not: (q) => @not => @query q
 
         @_tests =
-            $in: (x) =>
-                @raw ' IN '
-                @parens => @raw _.map([0...x.length], -> '?').join(', '), x...
+            $in: (x) => @in x
 
         _.each comparisonTable, (value, key) =>
             @_tests[key] = (x) =>
@@ -48,6 +44,14 @@ Mohair = class
 
     # Helpers
     # =======
+
+    in: (array) ->
+        @raw ' IN '
+        @parens => @raw _.map([0...array.length], -> '?').join(', '), array...
+
+    not: (inner) ->
+        @raw 'NOT '
+        @parens inner
 
     quoted: (string) -> @raw "'#{string}'"
 
