@@ -424,6 +424,10 @@ NOT (id IN (?, ?, ?, ?))
 [3, 5, 8, 9]
 ```
 
+### $nor
+
+shorthand for `$not: {$or: ...}`
+
 ## Use it with node-mysql
 
 ```coffeescript

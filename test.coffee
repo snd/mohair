@@ -264,3 +264,19 @@ module.exports =
             test.equals m.sql(), '(name = ? OR NOT (id = ? AND name = ?))'
             test.deepEqual m.params(), ['Ann', 9, 'Rick']
             test.done()
+
+        '$nor': (test) ->
+            m = mohair()
+
+            m.query
+                $nor: [
+                    {name: 'Ann'}
+                    {
+                        id: 9
+                        name: 'Rick'
+                    }
+                ]
+
+            test.equals m.sql(), 'NOT (name = ? OR id = ? AND name = ?)'
+            test.deepEqual m.params(), ['Ann', 9, 'Rick']
+            test.done()

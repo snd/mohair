@@ -25,6 +25,7 @@ Mohair = class
             $or: (q) => @parens => @subqueryByOp 'OR', q
             $and: (q) => @subqueryByOp 'AND', q
             $not: (q) => @not => @query q
+            $nor: (q) => @not => @subqueryByOp 'OR', q
 
         @_tests =
             $in: (x) => @in x
