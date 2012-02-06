@@ -6,9 +6,6 @@ comma = ', '
 
 Mohair = class
 
-    # Core
-    # ====
-
     constructor: ->
         @_sql = ''
         @_params = []
@@ -33,6 +30,10 @@ Mohair = class
 
         _.each comparisons, (value, key) =>
             @_tests[key] = (x) => @before value, => @callOrBind x
+
+
+    # Core
+    # ====
 
     sql: -> @_sql
 
