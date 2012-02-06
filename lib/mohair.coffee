@@ -3,6 +3,7 @@ assert = require 'assert'
 _ = require 'underscore'
 
 comparisonTable =
+    '$eq': ' = '
     '$ne': ' != '
     '$lt': ' < '
     '$lte': ' <= '
@@ -128,19 +129,16 @@ Mohair = class
     query: (query) ->
             @intersperse ' AND ', query, (value, key) =>
                 modifier = @_queryModifiers[key]
-                if  modifier?
+                if modifier?
                     modifier value
                     return
 
                 @raw key
 
-                if not _.isObject(value) or _.isFunction(value)
-                    @raw ' = '
-                    @callOrBind value
-                    return
+                isTest = _.isObject(value) and not _.isFunction(value)
 
-                test = @_tests[_.first _.keys value]
-                if test? then test _.first _.values value
+                test = @_tests[if isTest then _.first _.keys value else '$eq']
+                test if isTest then _.first _.values value else value
 
     subqueryByOp: (op, list) -> @intersperse " #{op} ", list, (x) => @query x
 
