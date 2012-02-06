@@ -10,8 +10,6 @@ comparisonTable =
     '$gt': ' > '
     '$gte': ' >= '
 
-comparisons = _.keys comparisonTable
-
 comma = ', '
 
 Mohair = class
