@@ -428,6 +428,10 @@ id IN (?, ?, ?, ?)
 [3, 5, 8, 9]
 ```
 
+### $nin
+
+select rows where a value is not in the given array.
+
 ## Use it with node-mysql
 
 ```coffeescript
