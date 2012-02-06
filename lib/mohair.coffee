@@ -45,7 +45,7 @@ Mohair = class
     # Helpers
     # =======
 
-    array: (xs) -> @parens => @raw _.map([0...xs.length], -> '?').join(', '), xs...
+    array: (xs) -> @parens => @intersperse comma, xs, @callOrBind
 
     not: (inner) -> @before 'NOT ', => @parens inner
 
@@ -82,7 +82,7 @@ Mohair = class
                 assert.deepEqual keys, _.keys(object),
                     'objects must have the same keys'
 
-                @parens => @intersperse comma, _.values(object), @callOrBind
+                @array _.values object
 
     update: (table, changes, funcOrQuery) ->
         @command "UPDATE #{table} SET ", =>
