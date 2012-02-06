@@ -318,6 +318,29 @@ cost >= ?
 [7, 10, 4, 7000]
 ```
 
+### $not
+
+the special key `$not` takes a query object and negates it:
+
+```coffeescript
+{query, quoted, raw, sql, params} = require('mohair')()
+
+query
+    $not: {id: {$in: [3, 5, 8, 9]}}
+```
+
+`sql()` returns:
+
+```sql
+NOT (id IN (?, ?, ?, ?))
+```
+
+`params()` returns:
+
+```coffeescript
+[3, 5, 8, 9]
+```
+
 ### $or
 
 the special key `$or` takes an array of query objects and generates a querystring
@@ -345,6 +368,10 @@ id = ? OR name = 'Another project' OR owner_id = ?
 ```coffeescript
 [7, 10]
 ```
+
+### $nor
+
+shorthand for `{$not: {$or: ...}}`
 
 ### $and
 
@@ -400,33 +427,6 @@ id IN (?, ?, ?, ?)
 ```coffeescript
 [3, 5, 8, 9]
 ```
-
-### $not
-
-negate a query.
-
-```coffeescript
-{query, quoted, raw, sql, params} = require('mohair')()
-
-query
-    $not: {id: {$in: [3, 5, 8, 9]}}
-```
-
-`sql()` returns:
-
-```sql
-NOT (id IN (?, ?, ?, ?))
-```
-
-`params()` returns:
-
-```coffeescript
-[3, 5, 8, 9]
-```
-
-### $nor
-
-shorthand for `$not: {$or: ...}`
 
 ## Use it with node-mysql
 
