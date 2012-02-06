@@ -22,12 +22,22 @@ Mohair = class
         @_sql = ''
         @_params = []
 
-        @_queries =
-            $or: (x) => @parens => @subqueryByOp 'OR', x
-            $and: (x) => @subqueryByOp 'AND', x
-            $not: (x) =>
+        @_queryModifiers =
+            $or: (q) => @parens => @subqueryByOp 'OR', q
+            $and: (q) => @subqueryByOp 'AND', q
+            $not: (q) =>
                 @raw 'NOT '
-                @parens => @query x
+                @parens => @query q
+
+        @_tests =
+            $in: (x) =>
+                @raw ' IN '
+                @parens => @raw _.map([0...x.length], -> '?').join(', '), x...
+
+        _.each comparisonTable, (value, key) =>
+            @_tests[key] = (x) =>
+                @raw value
+                @callOrBind x
 
     sql: -> @_sql
 
@@ -117,9 +127,9 @@ Mohair = class
 
     query: (query) ->
             @intersperse ' AND ', query, (value, key) =>
-                special = @_queries[key]
-                if  special?
-                    special value
+                modifier = @_queryModifiers[key]
+                if  modifier?
+                    modifier value
                     return
 
                 @raw key
@@ -129,16 +139,8 @@ Mohair = class
                     @callOrBind value
                     return
 
-                comp = _.first _.intersection comparisons, _.keys value
-                if comp?
-                    @raw comparisonTable[comp]
-                    @callOrBind value[comp]
-                else if value.$in?
-                    @raw ' IN '
-                    @parens =>
-                        array = value.$in
-                        string = _.map([0...array.length], -> '?').join(', ')
-                        @raw string, array...
+                test = @_tests[_.first _.keys value]
+                if test? then test _.first _.values value
 
     subqueryByOp: (op, list) -> @intersperse " #{op} ", list, (x) => @query x
 
