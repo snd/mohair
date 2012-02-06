@@ -32,9 +32,7 @@ Mohair = class
             $nin: (x) => @before ' NOT IN ', => @array x
 
         _.each comparisonTable, (value, key) =>
-            @_tests[key] = (x) =>
-                @raw value
-                @callOrBind x
+            @_tests[key] = (x) => @before value, => @callOrBind x
 
     sql: -> @_sql
 
@@ -47,12 +45,9 @@ Mohair = class
     # Helpers
     # =======
 
-    array: (array) ->
-        @parens => @raw _.map([0...array.length], -> '?').join(', '), array...
+    array: (xs) -> @parens => @raw _.map([0...xs.length], -> '?').join(', '), xs...
 
-    not: (inner) ->
-        @raw 'NOT '
-        @parens inner
+    not: (inner) -> @before 'NOT ', => @parens inner
 
     quoted: (string) -> @raw "'#{string}'"
 
@@ -112,9 +107,7 @@ Mohair = class
     # Select inner
     # ------------
 
-    where: (f) ->
-        @raw " WHERE "
-        if _.isFunction f then f() else @query f
+    where: (f) -> @before " WHERE ", => if _.isFunction f then f() else @query f
 
     _join: (prefix, table, left, right) ->
         @raw "#{prefix} JOIN #{table} ON #{left} = #{right}"
