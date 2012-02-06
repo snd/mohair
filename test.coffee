@@ -280,3 +280,15 @@ module.exports =
             test.equals m.sql(), 'NOT (name = ? OR id = ? AND name = ?)'
             test.deepEqual m.params(), ['Ann', 9, 'Rick']
             test.done()
+
+        '$nin': (test) ->
+            m = mohair()
+
+            m.query
+                id: {$nin: [3, 5, 8, 9]}
+                owner_id: {$nin: [10]}
+                name: {$nin: ['Ann', 'Rick']}
+
+            test.equals m.sql(), 'id NOT IN (?, ?, ?, ?) AND owner_id NOT IN (?) AND name NOT IN (?, ?)'
+            test.deepEqual m.params(), [3, 5, 8, 9, 10, 'Ann', 'Rick']
+            test.done()

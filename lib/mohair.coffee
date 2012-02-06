@@ -28,9 +28,8 @@ Mohair = class
             $nor: (q) => @not => @subqueryByOp 'OR', q
 
         @_tests =
-            $in: (x) =>
-                @raw ' IN '
-                @array x
+            $in: (x) => @before ' IN ', => @array x
+            $nin: (x) => @before ' NOT IN ', => @array x
 
         _.each comparisonTable, (value, key) =>
             @_tests[key] = (x) =>
@@ -67,6 +66,8 @@ Mohair = class
         @raw start
         inner() if inner?
         @raw end
+
+    before: (start, inner) -> @around start, '', inner
 
     parens: (inner) -> @around '(', ')', inner
 
