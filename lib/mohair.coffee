@@ -28,7 +28,9 @@ Mohair = class
             $nor: (q) => @not => @subqueryByOp 'OR', q
 
         @_tests =
-            $in: (x) => @in x
+            $in: (x) =>
+                @raw ' IN '
+                @array x
 
         _.each comparisonTable, (value, key) =>
             @_tests[key] = (x) =>
@@ -46,8 +48,7 @@ Mohair = class
     # Helpers
     # =======
 
-    in: (array) ->
-        @raw ' IN '
+    array: (array) ->
         @parens => @raw _.map([0...array.length], -> '?').join(', '), array...
 
     not: (inner) ->
