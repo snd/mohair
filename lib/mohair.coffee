@@ -2,14 +2,6 @@ assert = require 'assert'
 
 _ = require 'underscore'
 
-comparisonTable =
-    '$eq': ' = '
-    '$ne': ' != '
-    '$lt': ' < '
-    '$lte': ' <= '
-    '$gt': ' > '
-    '$gte': ' >= '
-
 comma = ', '
 
 Mohair = class
@@ -31,7 +23,15 @@ Mohair = class
             $in: (x) => @before ' IN ', => @array x
             $nin: (x) => @before ' NOT IN ', => @array x
 
-        _.each comparisonTable, (value, key) =>
+        comparisons =
+            '$eq': ' = '
+            '$ne': ' != '
+            '$lt': ' < '
+            '$lte': ' <= '
+            '$gt': ' > '
+            '$gte': ' >= '
+
+        _.each comparisons, (value, key) =>
             @_tests[key] = (x) => @before value, => @callOrBind x
 
     sql: -> @_sql
