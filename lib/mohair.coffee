@@ -110,7 +110,7 @@ Mohair = class
 
     _join: (prefix, table, left, right) ->
         @raw if not left?
-            table
+            "#{prefix} JOIN #{table}"
         else
             "#{prefix} JOIN #{table} ON #{left} = #{right}"
 
