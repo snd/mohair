@@ -31,7 +31,6 @@ Mohair = class
         _.each comparisons, (value, key) =>
             @_tests[key] = (x) => @before value, => @callOrBind x
 
-
     # Core
     # ====
 
