@@ -84,7 +84,7 @@ INSERT INTO project (name, created_on) VALUES (?, NOW());
 ## update
 
 ```coffeescript
-mohair = {update, where, Is, sql, params} = require('mohair')()
+mohair = {update, sql, params} = require('mohair')()
 
 changes =
     name: 'Even more amazing project'
