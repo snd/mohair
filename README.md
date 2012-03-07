@@ -195,8 +195,6 @@ mohair = {remove, sql, params} = require('mohair')()
 remove 'project', {id: 7, hidden: true}
 ```
 
-**Note:** the last argument is a query object. see section `Query language` below for details.
-
 `sql()` returns:
 
 ```sql
@@ -208,6 +206,8 @@ DELETE FROM project WHERE id = ? AND hidden = ?;
 ```coffeescript
 [7, true]
 ```
+
+**Note:** the last argument is a query object. see section `Query language` below for details.
 
 ## transactions
 
