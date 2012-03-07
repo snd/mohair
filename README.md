@@ -159,7 +159,7 @@ mohair = {select, leftJoin, where, groupBy, orderBy, sql, params} = require('moh
 
 select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
     leftJoin 'task', 'project.id' , 'task.project_id'
-    where {'project.visible', true}
+    where {'project.visible': true}
     groupBy 'project.id'
     orderBy 'project.created_on DESC'
 ```
