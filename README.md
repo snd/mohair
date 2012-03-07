@@ -2,19 +2,15 @@
 
 sql query builder for nodejs
 
-### Features
+## Features
 
-- build common queries easily
-- fall back to plain sql for more exotic queries
+- write very little code to generate sql for common queries
+- fall back to plain sql for everything else - wherever you need!
+- parameters are bound where they are used - no endless parameter lists!
+- a mongodb like query language to define conditions in where clauses
+- parts of conditions or parts of queries can be composed and reused easily
 
-### Advantages over writing mysql queries by hand
-
-- composability: query parts (for example conditions) can be factored out into functions and reused.
-- easier parameter handling: parameters are bound where they are used - no endless parameter lists!
-
-## Usage
-
-### insert
+## insert
 
 ```coffeescript
 {insert, sql, params} = require('mohair')()
@@ -37,7 +33,7 @@ INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
 ['Amazing Project', 5, false]
 ```
 
-#### inserting multiple rows at once
+### inserting multiple rows at once
 
 ```coffeescript
 {insert, sql, params} = require('mohair')()
@@ -46,8 +42,6 @@ insert 'project',
     {name: 'First project', hidden: true},
     {name: 'Second project', hidden: false}
 ```
-
-**Note:** All objects to be inserted must have the same keys.
 
 `sql()` returns:
 
@@ -61,9 +55,11 @@ INSERT INTO project (name) VALUES (?, ?), (?, ?);
 ['First project', true, 'Second project', false]
 ```
 
-#### raw values
+**Note:** When inserting multiple rows all inserted objects must have the same keys.
 
-if you want to insert the result of an sql function you can do so like this:
+#### raw sql
+
+insert raw sql instead of binding a parameter:
 
 ```coffeescript
 {insert, raw, sql, params} = require('mohair')()
@@ -85,7 +81,7 @@ INSERT INTO project (name, created_on) VALUES (?, NOW());
 ['Another Project']
 ```
 
-### update
+## update
 
 ```coffeescript
 mohair = {update, where, Is, sql, params} = require('mohair')()
@@ -112,9 +108,9 @@ UPDATE project SET name = ?, hidden = ? WHERE id = ?;
 
 **Note:** you can insert raw values the same way as for inserts.
 
-### select
+## select
 
-#### implicit star
+### implicit star
 
 ```coffeescript
 mohair = {select, sql, params} = require('mohair')()
@@ -134,15 +130,15 @@ SELECT * FROM project;
 []
 ```
 
-#### explicit column list and where clause
+### explicit column list and condition
 
 ```coffeescript
 mohair = {select, where, Is, sql, params} = require('mohair')()
 
-select 'project', ['name', 'id'], -> where {hidden: true}
+select 'project', ['name', 'id'], {hidden: true}
 ```
 
-**Note:** `where` takes a query object. see section `Query language` below for details.
+**Note:** the last argument is a query object. see section `Query language` below for details.
 
 `sql()` returns:
 
@@ -156,18 +152,17 @@ SELECT name, id FROM project WHERE hidden = ?;
 [true]
 ```
 
-#### join, groupBy and orderBy
+### join, groupBy and orderBy
 
 ```coffeescript
-mohair = {select, leftJoin, groupBy, orderBy, sql, params} = require('mohair')()
+mohair = {select, leftJoin, where, groupBy, orderBy, sql, params} = require('mohair')()
 
 select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
     leftJoin 'task', 'project.id' , 'task.project_id'
+    where {'project.visible', true}
     groupBy 'project.id'
     orderBy 'project.created_on DESC'
 ```
-
-**Note:** use `join`, `leftJoin`, `rightJoin`, and `innerJoin` as needed.
 
 `sql()` returns:
 
@@ -187,7 +182,10 @@ ORDER BY project.created_on DESC;
 []
 ```
 
-### delete (remove)
+**Note:** use `join`, `leftJoin`, `rightJoin`, and `innerJoin` as needed.
+**Note:** `where` takes a query object. see section `Query language` below for details.
+
+## remove
 
 ```coffeescript
 mohair = {where, remove, Is, And, sql, params} = require('mohair')()
@@ -196,8 +194,6 @@ remove 'project', {id: 7, hidden: true}
 ```
 
 **Note:** the last argument is a query object. see section `Query language` below for details.
-
-**Note:** `delete` is a keyword in javascript. use `remove` instead!
 
 `sql()` returns:
 
@@ -211,10 +207,10 @@ DELETE FROM project WHERE id = ? AND hidden = ?;
 [7, true]
 ```
 
-### transactions
+## transactions
 
 ```coffeescript
-mohair = {transaction, remove, where, Is, sql, params} = require('mohair')()
+mohair = {transaction, remove, update, sql, params} = require('mohair')()
 
 transaction ->
     remove 'project', {id: 7}
@@ -235,7 +231,7 @@ COMMIT;
 ```coffeescript
 [7, 'New name', 8]
 ```
-### fallback to raw sql with optional parameter bindings
+## fallback to raw sql with optional parameter bindings
 
 ```coffeescript
 {raw, sql, params} = require('mohair')()
