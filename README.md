@@ -190,7 +190,7 @@ ORDER BY project.created_on DESC;
 ## remove
 
 ```coffeescript
-mohair = {where, remove, Is, And, sql, params} = require('mohair')()
+mohair = {where, remove, sql, params} = require('mohair')()
 
 remove 'project', {id: 7, hidden: true}
 ```
