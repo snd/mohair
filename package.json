@@ -1,12 +1,17 @@
 {
-  "author": "snd",
-  "name": "mohair",
-  "version": "0.0.1",
-  "main": "lib/mohair",
-  "dependencies": {
-    "underscore": "*"
-  },
-  "devDependencies": {
-    "nodeunit": "*"
-  }
+    "name": "mohair",
+    "description": "sql query builder",
+    "author": "Maximilian Krüger <kruemaxi@googlemail.com> (http://github.com/snd)",
+    "version": "0.0.1",
+    "main": "lib/mohair",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/snd/mohair.git"
+    },
+    "dependencies": {
+        "underscore": "*"
+    },
+    "devDependencies": {
+        "nodeunit": "*"
+    }
 }
