@@ -184,6 +184,7 @@ ORDER BY project.created_on DESC;
 ```
 
 **Note:** use `join`, `leftJoin`, `rightJoin`, and `innerJoin` as needed.
+
 **Note:** `where` takes a query object. see section `Query language` below for details.
 
 ## remove
