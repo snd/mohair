@@ -109,7 +109,10 @@ Mohair = class
     where: (f) -> @before " WHERE ", => if _.isFunction f then f() else @query f
 
     _join: (prefix, table, left, right) ->
-        @raw "#{prefix} JOIN #{table} ON #{left} = #{right}"
+        @raw if not left?
+            table
+        else
+            "#{prefix} JOIN #{table} ON #{left} = #{right}"
 
     join: (args...) -> @_join '', args...
     leftJoin: (args...) -> @_join ' LEFT', args...
