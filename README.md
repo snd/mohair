@@ -133,7 +133,7 @@ SELECT * FROM project;
 ### explicit column list and condition
 
 ```coffeescript
-mohair = {select, where, Is, sql, params} = require('mohair')()
+mohair = {select, sql, params} = require('mohair')()
 
 select 'project', ['name', 'id'], {hidden: true}
 ```
