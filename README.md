@@ -110,7 +110,7 @@ UPDATE project SET name = ?, hidden = ? WHERE id = ?;
 
 ## select
 
-### implicit star
+### implicit *
 
 ```coffeescript
 mohair = {select, sql, params} = require('mohair')()
