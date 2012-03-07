@@ -452,3 +452,7 @@ insert 'project',
 client.query sql(), params(), (err, result) ->
     console.log result
 ```
+
+## License
+
+mohair is released under the MIT License (see LICENSE for details).
