@@ -57,7 +57,7 @@ INSERT INTO project (name) VALUES (?, ?), (?, ?);
 
 **Note:** When inserting multiple rows all inserted objects must have the same keys.
 
-#### raw sql
+### raw sql
 
 insert raw sql instead of binding a parameter:
 
