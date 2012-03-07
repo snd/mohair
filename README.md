@@ -432,7 +432,7 @@ id IN (?, ?, ?, ?)
 
 select rows where a value is not in the given array.
 
-## Use it with node-mysql
+## Use with node-mysql
 
 ```coffeescript
 
