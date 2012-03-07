@@ -172,6 +172,7 @@ SELECT
     project.*
 FROM project
 LEFT JOIN task ON project.id = task.project_id
+WHERE project.visible = true
 GROUP BY project.id
 ORDER BY project.created_on DESC;
 ```
