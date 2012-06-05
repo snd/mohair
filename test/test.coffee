@@ -1,4 +1,4 @@
-mohair = require './lib/mohair'
+mohair = require '../lib/mohair'
 
 module.exports =
     'raw':
@@ -291,4 +291,15 @@ module.exports =
 
             test.equals m.sql(), 'id NOT IN (?, ?, ?, ?) AND owner_id NOT IN (?) AND name NOT IN (?, ?)'
             test.deepEqual m.params(), [3, 5, 8, 9, 10, 'Ann', 'Rick']
+            test.done()
+
+    placeholder:
+
+        'using postgres placeholder': (test) ->
+            Pg = (c = 0) -> -> "$#{++c}"
+            m = mohair Pg()
+
+            m.select 'foo', ['bar'], {a: true, b: true}
+            string = "SELECT bar FROM foo WHERE a = $1 AND b = $2;\n"
+            test.equals m.sql(), string
             test.done()
