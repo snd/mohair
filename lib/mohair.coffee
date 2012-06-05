@@ -86,7 +86,7 @@ Mohair = class
 
     update: (table, changes, funcOrQuery) ->
         @command "UPDATE #{table} SET ", =>
-            @intersperse comma, changes, (value, column) => 
+            @intersperse comma, changes, (value, column) =>
                 @before "#{column} = ", => @callOrBind value
 
             @callOrQuery funcOrQuery
