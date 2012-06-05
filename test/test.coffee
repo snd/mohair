@@ -1,4 +1,5 @@
 mohair = require '../lib/mohair'
+console.log mohair
 
 module.exports =
     'raw':
@@ -296,8 +297,7 @@ module.exports =
     placeholder:
 
         'using postgres placeholder': (test) ->
-            Pg = (c = 0) -> -> "$#{++c}"
-            m = mohair Pg()
+            m = mohair mohair.placeholder.Pg()
 
             m.select 'foo', ['bar'], {a: true, b: true}
             string = "SELECT bar FROM foo WHERE a = $1 AND b = $2;\n"
