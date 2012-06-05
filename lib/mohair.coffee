@@ -6,9 +6,10 @@ comma = ', '
 
 Mohair = class
 
-    constructor: ->
+    constructor: (placeholder = -> '?') ->
         @_sql = ''
         @_params = []
+        @placeholder = placeholder
 
         @_queryModifiers =
             $or: (q) => @parens => @subqueryByOp 'OR', q
@@ -70,7 +71,7 @@ Mohair = class
 
     callOrQuery: (f) -> if _.isFunction f then f() else @where f
 
-    callOrBind: (f) => if _.isFunction f then f() else @raw '?', f
+    callOrBind: (f) => if _.isFunction f then f() else @raw @placeholder(), f
 
     # Interface
     # =========
@@ -86,7 +87,7 @@ Mohair = class
 
     update: (table, changes, funcOrQuery) ->
         @command "UPDATE #{table} SET ", =>
-            @intersperse comma, changes, (value, column) => 
+            @intersperse comma, changes, (value, column) =>
                 @before "#{column} = ", => @callOrBind value
 
             @callOrQuery funcOrQuery
@@ -142,4 +143,6 @@ Mohair = class
 
     subqueryByOp: (op, list) -> @intersperse " #{op} ", list, (x) => @query x
 
-module.exports = -> new Mohair
+module.exports = (params...) -> new Mohair params...
+module.exports.placeholder =
+    Pg: (c = 0) -> -> "$#{++c}"
