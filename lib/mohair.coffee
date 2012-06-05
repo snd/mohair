@@ -144,3 +144,5 @@ Mohair = class
     subqueryByOp: (op, list) -> @intersperse " #{op} ", list, (x) => @query x
 
 module.exports = (params...) -> new Mohair params...
+module.exports.placeholder =
+    Pg: (c = 0) -> -> "$#{++c}"
