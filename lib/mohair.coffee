@@ -135,7 +135,7 @@ Mohair = class
 
                 @raw key
 
-                isTest = _.isObject(value) and not _.isFunction(value)
+                isTest = _.isObject(value) and (not _.isFunction(value)) and (not _.isString(value))
 
                 test = @_tests[if isTest then _.first _.keys value else '$eq']
                 test if isTest then _.first _.values value else value
