@@ -75,7 +75,8 @@ Mohair = class
     # Interface
     # =========
 
-    insert: (table, objects...) ->
+    insert: (table, objects) ->
+        objects = if _.isArray objects then objects else [objects]
         keys = _.keys _.first objects
         @command "INSERT INTO #{table} (#{keys.join(', ')}) VALUES ", =>
             @intersperse comma, objects, (object, index) =>

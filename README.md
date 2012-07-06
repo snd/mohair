@@ -38,9 +38,10 @@ INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
 ```coffeescript
 {insert, sql, params} = require('mohair')()
 
-insert 'project',
+insert 'project', [
     {name: 'First project', hidden: true},
     {name: 'Second project', hidden: false}
+]
 ```
 
 `sql()` returns:
