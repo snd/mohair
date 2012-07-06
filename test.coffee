@@ -292,3 +292,28 @@ module.exports =
             test.equals m.sql(), 'id NOT IN (?, ?, ?, ?) AND owner_id NOT IN (?) AND name NOT IN (?, ?)'
             test.deepEqual m.params(), [3, 5, 8, 9, 10, 'Ann', 'Rick']
             test.done()
+
+        'string as value in query is not interpreted as test': (test) ->
+            m = mohair()
+
+            m.query
+                $or: [
+                    {id: 'foo'}
+                    {foo: 'id'}
+                ]
+
+            test.equals m.sql(), '(id = ? OR foo = ?)'
+            test.deepEqual m.params(), ['foo', 'id']
+            test.done()
+
+        'invalid $or query throws': (test) ->
+            m = mohair()
+
+            test.throws ->
+
+                m.query
+                    $or:
+                        id: 'foo'
+                        foo: 'id'
+
+            test.done()

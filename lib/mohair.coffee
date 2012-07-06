@@ -140,6 +140,10 @@ Mohair = class
                 test = @_tests[if isTest then _.first _.keys value else '$eq']
                 test if isTest then _.first _.values value else value
 
-    subqueryByOp: (op, list) -> @intersperse " #{op} ", list, (x) => @query x
+    subqueryByOp: (op, list) ->
+        if not _.isArray list
+            msg = "array expected as argument to #{op} query but #{list} given"
+            throw new Error msg
+        @intersperse " #{op} ", list, (x) => @query x
 
 module.exports = -> new Mohair
