@@ -75,7 +75,9 @@ Mohair = class
     # Interface
     # =========
 
-    insert: (table, objects) ->
+    insert: (table, objects, suffix) ->
+        if suffix? and not _.isFunction suffix
+            throw new Error "suffix must be a function but #{typeof suffix} was given"
         objects = if _.isArray objects then objects else [objects]
         keys = _.keys _.first objects
         @command "INSERT INTO #{table} (#{keys.join(', ')}) VALUES ", =>
@@ -84,6 +86,9 @@ Mohair = class
                     'objects must have the same keys'
 
                 @array _.values object
+            if suffix?
+                @raw ' '
+                suffix()
 
     update: (table, changes, funcOrQuery) ->
         @command "UPDATE #{table} SET ", =>
