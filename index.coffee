@@ -75,9 +75,7 @@ Mohair = class
     # Interface
     # =========
 
-    insert: (table, objects, suffix) ->
-        if suffix? and not _.isFunction suffix
-            throw new Error "suffix must be a function but #{typeof suffix} was given"
+    insert: (table, objects, updates) ->
         objects = if _.isArray objects then objects else [objects]
         keys = _.keys _.first objects
         @command "INSERT INTO #{table} (#{keys.join(', ')}) VALUES ", =>
@@ -86,9 +84,11 @@ Mohair = class
                     'objects must have the same keys'
 
                 @array _.values object
-            if suffix?
-                @raw ' '
-                suffix()
+            if updates?
+                throw new Error 'empty updates object' if _.keys(updates).length is 0
+                @raw ' ON DUPLICATE KEY UPDATE '
+                @intersperse comma, updates, (value, column) =>
+                    @before "#{column} = ", => @callOrBind value
 
     update: (table, changes, funcOrQuery) ->
         @command "UPDATE #{table} SET ", =>

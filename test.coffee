@@ -43,18 +43,6 @@ module.exports =
             test.deepEqual m.params(), ['Amazing Project', 5, false]
             test.done()
 
-        'with function': (test) ->
-            m = mohair()
-            m.insert 'project', {
-                name: 'Amazing Project'
-                owner_id: 5
-                hidden: false
-            }, -> m.raw 'ON DUPLICATE KEY UPDATE name=?', 'Not so amazing project'
-
-            test.equals m.sql(), 'INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name=?;\n'
-            test.deepEqual m.params(), ['Amazing Project', 5, false, 'Not so amazing project']
-            test.done()
-
         'bindings and raw': (test) ->
             m = mohair()
             m.insert 'project',
@@ -81,6 +69,22 @@ module.exports =
             test.equals m.sql(), 'INSERT INTO project (name, created_on) VALUES (?, NOW()), (?, ?);\n'
             test.deepEqual m.params(), ['First Project', 'Second Project', '1988.09.11']
             test.done()
+
+        'with update': (test) ->
+            m = mohair()
+            m.insert 'project', {
+                name: 'Amazing Project'
+                owner_id: 5
+                hidden: false
+            }, {
+                name: 'Not so amazing project'
+                id: -> m.raw 'LAST_INSERT_ID()'
+            }
+
+            test.equals m.sql(), 'INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = ?, id = LAST_INSERT_ID();\n'
+            test.deepEqual m.params(), ['Amazing Project', 5, false, 'Not so amazing project']
+            test.done()
+
 
     'update':
         'bindings': (test) ->
