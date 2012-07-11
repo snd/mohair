@@ -2,7 +2,7 @@
 
 sql query builder for nodejs
 
-*write elegant code to generate sql queries, instead of concatenating strings and pushing to endless parameter lists*
+*write elegant code to generate sql queries - instead of concatenating strings and pushing to endless parameter lists*
 
 ### Install
 
@@ -60,7 +60,7 @@ INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
 ['Amazing Project', 5, false]
 ```
 
-##### insert multiple rows at once
+#### insert multiple rows at once
 
 ```coffeescript
 {insert, sql, params} = require('mohair')()
@@ -85,7 +85,7 @@ INSERT INTO project (name) VALUES (?, ?), (?, ?);
 
 **Note:** When inserting multiple rows all inserted objects must have the same keys.
 
-##### call some sql function inside the insert
+#### call some sql function inside the insert
 
 ```coffeescript
 m = require('mohair')()
@@ -108,7 +108,7 @@ INSERT INTO project (name, created_on, user_id) VALUES (?, NOW(), LAST_INSERT_ID
 ['Another Project']
 ```
 
-##### update a row
+#### update a row
 
 ```coffeescript
 m = require('mohair')()
@@ -133,7 +133,7 @@ UPDATE project SET name = ?, hidden = ? WHERE id = ?;
 ['Even more amazing project', true, 7]
 ```
 
-##### select everything
+#### select everything
 
 ```coffeescript
 m = require('mohair')()
@@ -153,7 +153,7 @@ SELECT * FROM project;
 []
 ```
 
-##### select specific columns with a condition
+#### select specific columns with a condition
 
 ```coffeescript
 m = require('mohair')()
@@ -177,7 +177,7 @@ SELECT name, id FROM project WHERE hidden = ?;
 [true]
 ```
 
-##### join, groupBy and orderBy
+#### join, groupBy and orderBy
 
 ```coffeescript
 m = require('mohair')()
@@ -212,7 +212,7 @@ ORDER BY project.created_on DESC;
 
 **Note:** `where` takes a query object. see section `Query language` below for details.
 
-##### remove
+#### remove
 
 ```coffeescript
 m = require('mohair')()
@@ -234,7 +234,7 @@ DELETE FROM project WHERE id = ? AND hidden = ?;
 
 **Note:** the last argument is a query object. see section `Query language` below for details.
 
-##### transactions
+#### transactions
 
 ```coffeescript
 m = require('mohair')()
@@ -258,7 +258,7 @@ COMMIT;
 ```coffeescript
 [7, 'New name', 8]
 ```
-##### fall back to raw sql with optional parameter bindings
+#### fall back to raw sql with optional parameter bindings
 
 ```coffeescript
 m = require('mohair')()
@@ -278,11 +278,11 @@ SELECT * FROM project WHERE id = ?;
 [7]
 ```
 
-#### Query language
+### Query language
 
 inspired by the [mongo query language](http://www.mongodb.org/display/DOCS/Advanced+Queries)
 
-##### query objects
+#### query objects
 
 sql is generated from query objects by using the keys as column names,
 binding or calling the values and interspersing 'AND':
@@ -308,7 +308,7 @@ id = ? AND hidden = ? AND name = 'Another project'
 [7, true]
 ```
 
-##### comparison operators
+#### comparison operators
 
 you can change the default comparison operator '=' as follows:
 
@@ -341,7 +341,7 @@ cost >= ?
 [7, 10, 4, 7000]
 ```
 
-###### $in
+##### $in
 
 select rows where column `id` has one of the values: `3, 5, 8, 9`:
 
@@ -364,11 +364,11 @@ id IN (?, ?, ?, ?)
 [3, 5, 8, 9]
 ```
 
-###### $nin
+##### $nin
 
 shorthand for `{$not: {$in: ...}}`
 
-###### $not
+##### $not
 
 the special key `$not` takes a query object and negates it:
 
@@ -391,7 +391,7 @@ NOT (id IN (?, ?, ?, ?))
 [3, 5, 8, 9]
 ```
 
-###### $or
+##### $or
 
 the special key `$or` takes an array of query objects and generates a querystring
 where only one of the queries must match:
@@ -419,11 +419,11 @@ id = ? OR name = 'Another project' OR owner_id = ?
 [7, 10]
 ```
 
-###### $nor
+##### $nor
 
 shorthand for `{$not: {$or: ...}}`
 
-###### $and
+##### $and
 
 the special key `$and` takes an array of query objects and generates a querystring
 where all of the queries must match.
