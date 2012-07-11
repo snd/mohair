@@ -108,6 +108,34 @@ INSERT INTO project (name, created_on, user_id) VALUES (?, NOW(), LAST_INSERT_ID
 ['Another Project']
 ```
 
+#### update on duplicate key
+
+use the optional third parameter:
+
+```coffeescript
+m = require('mohair')()
+
+m.insert 'project', {
+    id: 'foo'
+    name: 'bar'
+}, {
+    name: 'bar'
+    update_count: -> m.raw 'update_count + 1'
+}
+```
+
+`m.sql()` returns:
+
+```sql
+INSERT INTO project (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = ?, update_count = update_count + 1;
+```
+
+`m.params()` returns:
+
+```coffeescript
+['foo', 'bar', 'bar']
+```
+
 #### update a row
 
 ```coffeescript
