@@ -70,7 +70,8 @@ Mohair = class
 
     callOrBind: (f) => if _.isFunction f then f() else @raw '?', f
 
-    commaSeparatedAssignments: (obj) ->
+    # {key1} = {value1()}, {key2} = {value2()}, ...
+    assignments: (obj) ->
         @intersperse ', ', obj, (value, column) =>
             @before "#{column} = ", => @callOrBind value
 
@@ -89,23 +90,23 @@ Mohair = class
             if updates?
                 throw new Error 'empty updates object' if _.keys(updates).length is 0
                 @raw ' ON DUPLICATE KEY UPDATE '
-                @commaSeparatedAssignments updates
+                @assignments updates
 
-    update: (table, changes, funcOrQuery) ->
+    update: (table, changes, f) ->
         @command "UPDATE #{table} SET ", =>
-            @commaSeparatedAssignments changes
+            @assignments changes
 
-            @callOrQuery funcOrQuery
+            @callOrQuery f
 
     remove: (table, f) -> @command "DELETE FROM #{table}", => @callOrQuery f
 
-    select: (table, columns, funcOrQuery) ->
-        if not funcOrQuery?
-            funcOrQuery = columns
+    select: (table, columns, f) ->
+        if not f?
+            f = columns
             columns = '*'
         columns = columns.join(', ') if _.isArray columns
         @command "SELECT #{columns} FROM #{table}", =>
-            @callOrQuery funcOrQuery if funcOrQuery?
+            @callOrQuery f if f?
 
     transaction: (inner) -> @around 'START TRANSACTION;\n', 'COMMIT;\n', inner
 
@@ -134,10 +135,7 @@ Mohair = class
 
     query: (query) ->
             @intersperse ' AND ', query, (value, key) =>
-                modifier = @_queryModifiers[key]
-                if modifier?
-                    modifier value
-                    return
+                return @_queryModifiers[key] value if @_queryModifiers[key]?
 
                 @raw key
 
