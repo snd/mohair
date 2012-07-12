@@ -2,8 +2,6 @@ assert = require 'assert'
 
 _ = require 'underscore'
 
-comma = ', '
-
 Mohair = class
 
     constructor: ->
@@ -45,7 +43,7 @@ Mohair = class
     # Helpers
     # =======
 
-    array: (xs) -> @parens => @intersperse comma, xs, @callOrBind
+    array: (xs) -> @parens => @intersperse ', ', xs, @callOrBind
 
     not: (inner) -> @before 'NOT ', => @parens inner
 
@@ -72,6 +70,10 @@ Mohair = class
 
     callOrBind: (f) => if _.isFunction f then f() else @raw '?', f
 
+    commaSeparatedAssignments: (obj) ->
+                @intersperse ', ', obj, (value, column) =>
+                    @before "#{column} = ", => @callOrBind value
+
     # Interface
     # =========
 
@@ -79,7 +81,7 @@ Mohair = class
         objects = if _.isArray objects then objects else [objects]
         keys = _.keys _.first objects
         @command "INSERT INTO #{table} (#{keys.join(', ')}) VALUES ", =>
-            @intersperse comma, objects, (object, index) =>
+            @intersperse ', ', objects, (object, index) =>
                 assert.deepEqual keys, _.keys(object),
                     'objects must have the same keys'
 
@@ -87,13 +89,11 @@ Mohair = class
             if updates?
                 throw new Error 'empty updates object' if _.keys(updates).length is 0
                 @raw ' ON DUPLICATE KEY UPDATE '
-                @intersperse comma, updates, (value, column) =>
-                    @before "#{column} = ", => @callOrBind value
+                @commaSeparatedAssignments updates
 
     update: (table, changes, funcOrQuery) ->
         @command "UPDATE #{table} SET ", =>
-            @intersperse comma, changes, (value, column) => 
-                @before "#{column} = ", => @callOrBind value
+            @commaSeparatedAssignments changes
 
             @callOrQuery funcOrQuery
 
