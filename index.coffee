@@ -49,11 +49,11 @@ Mohair = class
 
     quoted: (string) -> @raw "'#{string}'"
 
-    intersperse: (string, list, f) ->
+    intersperse: (string, obj, f) ->
         first = true
-        _.each list, (v, k) =>
+        _.each obj, (value, key) =>
             if first then first = false else @raw string
-            f v, k
+            f value, key
 
     around: (start, end, inner) ->
         @raw start
@@ -80,7 +80,7 @@ Mohair = class
 
     insert: (table, objects, updates) ->
         objects = if _.isArray objects then objects else [objects]
-        keys = _.keys _.first objects
+        keys = _.keys objects[0]
         @command "INSERT INTO #{table} (#{keys.join(', ')}) VALUES ", =>
             @intersperse ', ', objects, (object, index) =>
                 assert.deepEqual keys, _.keys(object),
@@ -134,15 +134,15 @@ Mohair = class
     # =====
 
     query: (query) ->
-            @intersperse ' AND ', query, (value, key) =>
-                return @_queryModifiers[key] value if @_queryModifiers[key]?
+        @intersperse ' AND ', query, (value, key) =>
+            return @_queryModifiers[key] value if @_queryModifiers[key]?
 
-                @raw key
+            @raw key
 
-                isTest = _.isObject(value) and (not _.isFunction(value)) and (not _.isString(value))
+            isTest = _.isObject(value) and (not _.isFunction(value)) and (not _.isString(value))
 
-                test = @_tests[if isTest then _.first _.keys value else '$eq']
-                test if isTest then _.first _.values value else value
+            test = @_tests[if isTest then _.keys(value)[0] else '$eq']
+            test if isTest then _.values(value)[0] else value
 
     subqueryByOp: (op, list) ->
         if not _.isArray list
