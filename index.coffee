@@ -71,8 +71,8 @@ Mohair = class
     callOrBind: (f) => if _.isFunction f then f() else @raw '?', f
 
     commaSeparatedAssignments: (obj) ->
-                @intersperse ', ', obj, (value, column) =>
-                    @before "#{column} = ", => @callOrBind value
+        @intersperse ', ', obj, (value, column) =>
+            @before "#{column} = ", => @callOrBind value
 
     # Interface
     # =========
