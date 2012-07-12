@@ -225,7 +225,7 @@ SELECT
     project.*
 FROM project
 LEFT JOIN task ON project.id = task.project_id
-WHERE project.visible = true
+WHERE project.visible = ?
 GROUP BY project.id
 ORDER BY project.created_on DESC;
 ```
@@ -233,7 +233,7 @@ ORDER BY project.created_on DESC;
 `m.params()` returns:
 
 ```coffeescript
-[]
+[true]
 ```
 
 **Note:** use `join`, `leftJoin`, `rightJoin`, and `innerJoin` as needed.
@@ -358,7 +358,7 @@ m.query
 id = ? AND
 name != 'Another project' AND
 owner_id < ? AND
-category_id <= 4 AND
+category_id <= ? AND
 deadline > NOW() AND
 cost >= ?
 ```
@@ -392,9 +392,7 @@ id IN (?, ?, ?, ?)
 [3, 5, 8, 9]
 ```
 
-##### $nin
-
-shorthand for `{$not: {$in: ...}}`
+##### $nin = not in
 
 ##### $not
 
