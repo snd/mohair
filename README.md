@@ -83,7 +83,7 @@ INSERT INTO project (`name`, `hidden`) VALUES (?, ?), (?, ?);
 ['First project', true, 'Second project', false]
 ```
 
-**Note:** When inserting multiple rows all inserted objects must have the same keys.
+**Note:** all inserted objects must have the same keys.
 
 #### call some sql function inside the insert
 
