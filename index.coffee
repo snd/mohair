@@ -1,14 +1,13 @@
 assert = require 'assert'
 
-_ = require 'underscore'
-
-backtick = (s) -> "`#{s}`"
-
 newMysqlPlaceholderGenerator = ->
     -> '?'
 newPostgresPlaceholderGenerator = ->
     i = 1
     -> "$#{i++}"
+
+backtick = (s) -> "`#{s}`"
+values = (obj) -> Object.keys(obj).map (key) -> obj[key]
 
 Mohair = class
 
@@ -34,8 +33,9 @@ Mohair = class
             '$gt': ' > '
             '$gte': ' >= '
 
-        _.each comparisons, (value, key) =>
-            @_tests[key] = (x) => @before value, => @callOrBind x
+        for key, operator of comparisons
+            do (key, operator) =>
+                @_tests[key] = (x) => @before operator, => @callOrBind x
 
     # Core
     # ====
@@ -59,9 +59,10 @@ Mohair = class
 
     intersperse: (string, obj, f) ->
         first = true
-        _.each obj, (value, key) =>
-            if first then first = false else @raw string
-            f value, key
+        for key, value of obj
+            do (key, value) =>
+                if first then first = false else @raw string
+                f value, key
 
     around: (start, end, inner) ->
         @raw start
@@ -74,9 +75,10 @@ Mohair = class
 
     command: (start, inner) -> @around start, ';\n', inner
 
-    callOrQuery: (f) -> if _.isFunction f then f() else @where f
+    callOrQuery: (f) -> if typeof f is 'function' then f() else @where f
 
-    callOrBind: (f) => if _.isFunction f then f() else @raw @getNextPlaceholder(), f
+    callOrBind: (f) =>
+        if typeof f is 'function' then f() else @raw @getNextPlaceholder(), f
 
     # {key1} = {value1()}, {key2} = {value2()}, ...
     assignments: (obj) ->
@@ -88,17 +90,17 @@ Mohair = class
 
     insert: (table, objects, updates) ->
         throw new Error 'second argument missing in insert' if not objects?
-        objects = if _.isArray objects then objects else [objects]
+        objects = if Array.isArray objects then objects else [objects]
         return @command "INSERT INTO #{table} () VALUES ()" if objects.length is 0
-        keys = _.keys objects[0]
+        keys = Object.keys objects[0]
         @command "INSERT INTO #{table} (#{keys.map(backtick).join(', ')}) VALUES ", =>
             @intersperse ', ', objects, (object, index) =>
-                assert.deepEqual keys, _.keys(object),
+                assert.deepEqual keys, Object.keys(object),
                     'objects must have the same keys'
 
-                @array _.values object
+                @array values object
             if updates?
-                throw new Error 'empty updates object' if _.keys(updates).length is 0
+                throw new Error 'empty updates object' if Object.keys(updates).length is 0
                 @raw ' ON DUPLICATE KEY UPDATE '
                 @assignments updates
 
@@ -114,7 +116,7 @@ Mohair = class
         if not f?
             f = columns
             columns = '*'
-        columns = columns.join(', ') if _.isArray columns
+        columns = columns.join(', ') if Array.isArray columns
         @command "SELECT #{columns} FROM #{table}", =>
             @callOrQuery f if f?
 
@@ -123,7 +125,8 @@ Mohair = class
     # Select inner
     # ------------
 
-    where: (f) -> @before " WHERE ", => if _.isFunction f then f() else @query f
+    where: (f) -> @before " WHERE ", =>
+        if typeof f is 'function' then f() else @query f
 
     _join: (prefix, table, left, right) ->
         @raw if not left?
@@ -149,13 +152,12 @@ Mohair = class
 
             @raw backtick(key)
 
-            isTest = _.isObject(value) and (not _.isFunction(value)) and (not _.isString(value))
-
-            test = @_tests[if isTest then _.keys(value)[0] else '$eq']
-            test if isTest then _.values(value)[0] else value
+            isTest = typeof value is 'object'
+            test = @_tests[if isTest then Object.keys(value)[0] else '$eq']
+            test if isTest then values(value)[0] else value
 
     subqueryByOp: (op, list) ->
-        if not _.isArray list
+        if not Array.isArray list
             msg = "array expected as argument to #{op} query but #{list} given"
             throw new Error msg
         @intersperse " #{op} ", list, (x) => @query x
