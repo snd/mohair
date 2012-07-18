@@ -51,7 +51,7 @@ m.insert 'project',
 `m.sql()` returns:
 
 ```sql
-INSERT INTO project (`name,` `owner_id,` `hidden`) VALUES (?, ?, ?);
+INSERT INTO project (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?);
 ```
 
 `m.params()` returns:
@@ -74,7 +74,7 @@ insert 'project', [
 `sql()` returns:
 
 ```sql
-INSERT INTO project (`name, `hidden`) VALUES (?, ?), (?, ?);
+INSERT INTO project (`name`, `hidden`) VALUES (?, ?), (?, ?);
 ```
 
 `params()` returns:
