@@ -39,7 +39,7 @@ module.exports =
                 owner_id: 5
                 hidden: false
 
-            test.equals m.sql(), 'INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);\n'
+            test.equals m.sql(), 'INSERT INTO project (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?);\n'
             test.deepEqual m.params(), ['Amazing Project', 5, false]
             test.done()
 
@@ -49,7 +49,7 @@ module.exports =
                 name: 'Another Project'
                 created_on: -> m.raw 'NOW()'
 
-            test.equals m.sql(), 'INSERT INTO project (name, created_on) VALUES (?, NOW());\n'
+            test.equals m.sql(), 'INSERT INTO project (`name`, `created_on`) VALUES (?, NOW());\n'
             test.deepEqual m.params(), ['Another Project']
             test.done()
 
@@ -66,7 +66,7 @@ module.exports =
                 }
             ]
 
-            test.equals m.sql(), 'INSERT INTO project (name, created_on) VALUES (?, NOW()), (?, ?);\n'
+            test.equals m.sql(), 'INSERT INTO project (`name`, `created_on`) VALUES (?, NOW()), (?, ?);\n'
             test.deepEqual m.params(), ['First Project', 'Second Project', '1988.09.11']
             test.done()
 
@@ -81,10 +81,9 @@ module.exports =
                 id: -> m.raw 'LAST_INSERT_ID()'
             }
 
-            test.equals m.sql(), 'INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = ?, id = LAST_INSERT_ID();\n'
+            test.equals m.sql(), 'INSERT INTO project (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = ?, id = LAST_INSERT_ID();\n'
             test.deepEqual m.params(), ['Amazing Project', 5, false, 'Not so amazing project']
             test.done()
-
 
     'update':
         'bindings': (test) ->

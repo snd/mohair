@@ -81,7 +81,8 @@ Mohair = class
     insert: (table, objects, updates) ->
         objects = if _.isArray objects then objects else [objects]
         keys = _.keys objects[0]
-        @command "INSERT INTO #{table} (#{keys.join(', ')}) VALUES ", =>
+        escapedKeys = _.map keys, (key) -> "`#{key}`"
+        @command "INSERT INTO #{table} (#{escapedKeys.join(', ')}) VALUES ", =>
             @intersperse ', ', objects, (object, index) =>
                 assert.deepEqual keys, _.keys(object),
                     'objects must have the same keys'
