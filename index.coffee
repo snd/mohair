@@ -2,6 +2,8 @@ assert = require 'assert'
 
 _ = require 'underscore'
 
+backquote = (s) -> "`#{s}`"
+
 Mohair = class
 
     constructor: ->
@@ -83,8 +85,7 @@ Mohair = class
         objects = if _.isArray objects then objects else [objects]
         return @command "INSERT INTO #{table} () VALUES ()" if objects.length is 0
         keys = _.keys objects[0]
-        escapedKeys = _.map keys, (key) -> "`#{key}`"
-        @command "INSERT INTO #{table} (#{escapedKeys.join(', ')}) VALUES ", =>
+        @command "INSERT INTO #{table} (#{keys.map(backquote).join(', ')}) VALUES ", =>
             @intersperse ', ', objects, (object, index) =>
                 assert.deepEqual keys, _.keys(object),
                     'objects must have the same keys'
