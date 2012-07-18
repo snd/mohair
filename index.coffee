@@ -4,9 +4,15 @@ _ = require 'underscore'
 
 backtick = (s) -> "`#{s}`"
 
+newMysqlPlaceholderGenerator = ->
+    -> '?'
+newPostgresPlaceholderGenerator = ->
+    i = 1
+    -> "$#{i++}"
+
 Mohair = class
 
-    constructor: ->
+    constructor: (@getNextPlaceholder = newMysqlPlaceholderGenerator()) ->
         @_sql = ''
         @_params = []
 
@@ -70,7 +76,7 @@ Mohair = class
 
     callOrQuery: (f) -> if _.isFunction f then f() else @where f
 
-    callOrBind: (f) => if _.isFunction f then f() else @raw '?', f
+    callOrBind: (f) => if _.isFunction f then f() else @raw @getNextPlaceholder(), f
 
     # {key1} = {value1()}, {key2} = {value2()}, ...
     assignments: (obj) ->
@@ -154,4 +160,6 @@ Mohair = class
             throw new Error msg
         @intersperse " #{op} ", list, (x) => @query x
 
-module.exports = -> new Mohair
+module.exports = (placeholderGenerator) -> new Mohair placeholderGenerator
+module.exports.newMysqlPlaceholderGenerator = newMysqlPlaceholderGenerator
+module.exports.newPostgresPlaceholderGenerator = newPostgresPlaceholderGenerator

@@ -343,3 +343,16 @@ module.exports =
                         foo: 'id'
 
             test.done()
+
+    'newPostgresPlaceholderGenerator': (test) ->
+
+        m = mohair mohair.newPostgresPlaceholderGenerator()
+
+        m.query
+            $or: [
+                {id: 'foo'}
+                {foo: 'id'}
+            ]
+        test.equals m.sql(), '(`id` = $1 OR `foo` = $2)'
+        test.deepEqual m.params(), ['foo', 'id']
+        test.done()
