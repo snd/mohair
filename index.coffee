@@ -2,7 +2,7 @@ assert = require 'assert'
 
 _ = require 'underscore'
 
-backquote = (s) -> "`#{s}`"
+backtick = (s) -> "`#{s}`"
 
 Mohair = class
 
@@ -75,7 +75,7 @@ Mohair = class
     # {key1} = {value1()}, {key2} = {value2()}, ...
     assignments: (obj) ->
         @intersperse ', ', obj, (value, column) =>
-            @before "#{backquote(column)} = ", => @callOrBind value
+            @before "#{backtick(column)} = ", => @callOrBind value
 
     # Interface
     # =========
@@ -85,7 +85,7 @@ Mohair = class
         objects = if _.isArray objects then objects else [objects]
         return @command "INSERT INTO #{table} () VALUES ()" if objects.length is 0
         keys = _.keys objects[0]
-        @command "INSERT INTO #{table} (#{keys.map(backquote).join(', ')}) VALUES ", =>
+        @command "INSERT INTO #{table} (#{keys.map(backtick).join(', ')}) VALUES ", =>
             @intersperse ', ', objects, (object, index) =>
                 assert.deepEqual keys, _.keys(object),
                     'objects must have the same keys'
