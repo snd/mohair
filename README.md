@@ -99,7 +99,7 @@ m.insert 'project',
 `m.sql()` returns:
 
 ```sql
-INSERT INTO project (`name,` `created_on,` `user_id`) VALUES (?, NOW(), LAST_INSERT_ID());
+INSERT INTO project (`name,` `created_on`, `user_id`) VALUES (?, NOW(), LAST_INSERT_ID());
 ```
 
 `m.params()` returns:
@@ -127,7 +127,7 @@ m.insert 'project', {
 `m.sql()` returns:
 
 ```sql
-INSERT INTO project (`id,` `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `update_count` = update_count + 1;
+INSERT INTO project (`id`, `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `update_count` = update_count + 1;
 ```
 
 `m.params()` returns:
