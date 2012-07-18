@@ -51,7 +51,7 @@ m.insert 'project',
 `m.sql()` returns:
 
 ```sql
-INSERT INTO project (name, owner_id, hidden) VALUES (?, ?, ?);
+INSERT INTO project (`name,` `owner_id,` `hidden`) VALUES (?, ?, ?);
 ```
 
 `m.params()` returns:
@@ -74,7 +74,7 @@ insert 'project', [
 `sql()` returns:
 
 ```sql
-INSERT INTO project (name) VALUES (?, ?), (?, ?);
+INSERT INTO project (`name, `hidden`) VALUES (?, ?), (?, ?);
 ```
 
 `params()` returns:
@@ -99,7 +99,7 @@ m.insert 'project',
 `m.sql()` returns:
 
 ```sql
-INSERT INTO project (name, created_on, user_id) VALUES (?, NOW(), LAST_INSERT_ID());
+INSERT INTO project (`name,` `created_on,` `user_id`) VALUES (?, NOW(), LAST_INSERT_ID());
 ```
 
 `m.params()` returns:
@@ -127,7 +127,7 @@ m.insert 'project', {
 `m.sql()` returns:
 
 ```sql
-INSERT INTO project (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = ?, update_count = update_count + 1;
+INSERT INTO project (`id,` `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `update_count` = update_count + 1;
 ```
 
 `m.params()` returns:
@@ -152,7 +152,7 @@ m.update 'project', {
 `m.sql()` returns:
 
 ```sql
-UPDATE project SET name = ?, hidden = ? WHERE id = ?;
+UPDATE project SET `name` = ?, `hidden` = ? WHERE `id` = ?;
 ```
 
 `m.params()` returns:
@@ -196,7 +196,7 @@ m.select 'project', ['name', 'id'], {hidden: true}
 `m.sql()` returns:
 
 ```sql
-SELECT name, id FROM project WHERE hidden = ?;
+SELECT name, id FROM project WHERE `hidden` = ?;
 ```
 
 `m.params()` returns:
@@ -225,7 +225,7 @@ SELECT
     project.*
 FROM project
 LEFT JOIN task ON project.id = task.project_id
-WHERE project.visible = ?
+WHERE `project.visible` = ?
 GROUP BY project.id
 ORDER BY project.created_on DESC;
 ```
@@ -251,7 +251,7 @@ m.remove 'project', {id: 7, hidden: true}
 `m.sql()` returns:
 
 ```sql
-DELETE FROM project WHERE id = ? AND hidden = ?;
+DELETE FROM project WHERE `id` = ? AND `hidden` = ?;
 ```
 
 `m.params()` returns:
@@ -276,8 +276,8 @@ m.transaction ->
 
 ```sql
 START TRANSACTION;
-DELETE FROM project WHERE id = ?;
-UPDATE project SET name = ? WHERE id = ?;
+DELETE FROM project WHERE `id` = ?;
+UPDATE project SET `name` = ? WHERE `id` = ?;
 COMMIT;
 ```
 
@@ -291,13 +291,13 @@ COMMIT;
 ```coffeescript
 m = require('mohair')()
 
-m.raw 'SELECT * FROM project WHERE id = ?;', 7
+m.raw 'SELECT * FROM project WHERE `id` = ?;', 7
 ```
 
 `m.sql()` returns:
 
 ```sql
-SELECT * FROM project WHERE id = ?;
+SELECT * FROM project WHERE `id` = ?;
 ```
 
 `m.params()` returns:
@@ -327,7 +327,7 @@ m.query
 `m.sql()` returns:
 
 ```sql
-id = ? AND hidden = ? AND name = 'Another project'
+`id` = ? AND `hidden` = ? AND `name` = 'Another project'
 ```
 
 `m.params()` returns:
@@ -355,12 +355,12 @@ m.query
 `m.sql()` returns:
 
 ```sql
-id = ? AND
-name != 'Another project' AND
-owner_id < ? AND
-category_id <= ? AND
-deadline > NOW() AND
-cost >= ?
+`id` = ? AND
+`name` != 'Another project' AND
+`owner_id` < ? AND
+`category_id` <= ? AND
+`deadline` > NOW() AND
+`cost` >= ?
 ```
 
 `params()` returns:
@@ -383,7 +383,7 @@ m.query
 `m.sql()` returns:
 
 ```sql
-id IN (?, ?, ?, ?)
+`id` IN (?, ?, ?, ?)
 ```
 
 `m.params()` returns:
@@ -408,7 +408,7 @@ m.query
 `m.sql()` returns:
 
 ```sql
-NOT (id IN (?, ?, ?, ?))
+NOT (`id` IN (?, ?, ?, ?))
 ```
 
 `m.params()` returns:
@@ -436,7 +436,7 @@ m.query
 `m.sql()` returns:
 
 ```sql
-id = ? OR name = 'Another project' OR owner_id = ?
+`id` = ? OR `name` = 'Another project' OR `owner_id` = ?
 ```
 
 `m.params()` returns:
@@ -472,7 +472,7 @@ m.query
 `m.sql()` returns:
 
 ```sql
-id = ? AND (owner_id = ? OR cost > ? AND cost < ?)
+`id` = ? AND (`owner_id` = ? OR `cost` > ? AND `cost` < ?)
 ```
 
 `m.params()` returns:
