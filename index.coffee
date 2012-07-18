@@ -79,7 +79,9 @@ Mohair = class
     # =========
 
     insert: (table, objects, updates) ->
+        throw new Error 'second argument missing in insert' if not objects?
         objects = if _.isArray objects then objects else [objects]
+        return @command "INSERT INTO #{table} () VALUES ()" if objects.length is 0
         keys = _.keys objects[0]
         escapedKeys = _.map keys, (key) -> "`#{key}`"
         @command "INSERT INTO #{table} (#{escapedKeys.join(', ')}) VALUES ", =>

@@ -32,6 +32,14 @@ module.exports =
 
     'insert':
 
+        'empty': (test) ->
+            m = mohair()
+            m.insert 'project', []
+
+            test.equals m.sql(), 'INSERT INTO project () VALUES ();\n'
+            test.deepEqual m.params(), []
+            test.done()
+
         'bindings': (test) ->
             m = mohair()
             m.insert 'project',
