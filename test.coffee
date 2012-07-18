@@ -89,7 +89,7 @@ module.exports =
                 id: -> m.raw 'LAST_INSERT_ID()'
             }
 
-            test.equals m.sql(), 'INSERT INTO project (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = ?, id = LAST_INSERT_ID();\n'
+            test.equals m.sql(), 'INSERT INTO project (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `id` = LAST_INSERT_ID();\n'
             test.deepEqual m.params(), ['Amazing Project', 5, false, 'Not so amazing project']
             test.done()
 
@@ -102,7 +102,7 @@ module.exports =
             m = mohair()
             m.update 'project', changes, {id: 7}
 
-            test.equals m.sql(), 'UPDATE project SET name = ?, hidden = ? WHERE id = ?;\n'
+            test.equals m.sql(), 'UPDATE project SET `name` = ?, `hidden` = ? WHERE id = ?;\n'
             test.deepEqual m.params(), ['Even more amazing project', true, 7]
             test.done()
 
@@ -115,7 +115,7 @@ module.exports =
 
             m.update 'project', changes, {id: 7}
 
-            test.equals m.sql(), 'UPDATE project SET name = ?, updated_on = NOW() WHERE id = ?;\n'
+            test.equals m.sql(), 'UPDATE project SET `name` = ?, `updated_on` = NOW() WHERE id = ?;\n'
             test.deepEqual m.params(), ['Even more amazing project', 7]
             test.done()
 
@@ -135,7 +135,7 @@ module.exports =
             m.remove 'project', {id: 7}
             m.update 'project', {name: 'New name'}, {id: 8}
 
-        test.equals m.sql(), 'START TRANSACTION;\nDELETE FROM project WHERE id = ?;\nUPDATE project SET name = ? WHERE id = ?;\nCOMMIT;\n'
+        test.equals m.sql(), 'START TRANSACTION;\nDELETE FROM project WHERE id = ?;\nUPDATE project SET `name` = ? WHERE id = ?;\nCOMMIT;\n'
         test.deepEqual m.params(), [7, 'New name', 8]
         test.done()
 

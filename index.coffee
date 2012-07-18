@@ -75,7 +75,7 @@ Mohair = class
     # {key1} = {value1()}, {key2} = {value2()}, ...
     assignments: (obj) ->
         @intersperse ', ', obj, (value, column) =>
-            @before "#{column} = ", => @callOrBind value
+            @before "#{backquote(column)} = ", => @callOrBind value
 
     # Interface
     # =========
