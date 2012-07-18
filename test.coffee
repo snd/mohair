@@ -12,7 +12,7 @@ module.exports =
             test.done()
 
         'with bindings': (test) ->
-            string = 'SELECT * FROM project WHERE id = ? AND owner_id = ?;'
+            string = 'SELECT * FROM project WHERE `id` = ? AND `owner_id` = ?;'
 
             m = mohair()
             m.raw string, 7, 4
@@ -23,10 +23,10 @@ module.exports =
 
         'twice': (test) ->
             m = mohair()
-            m.raw 'SELECT * FROM project WHERE id = ?;', 7
-            m.raw 'SELECT * FROM project WHERE id = ?;', 4
+            m.raw 'SELECT * FROM project WHERE `id` = ?;', 7
+            m.raw 'SELECT * FROM project WHERE `id` = ?;', 4
 
-            test.equals m.sql(), 'SELECT * FROM project WHERE id = ?;SELECT * FROM project WHERE id = ?;'
+            test.equals m.sql(), 'SELECT * FROM project WHERE `id` = ?;SELECT * FROM project WHERE `id` = ?;'
             test.deepEqual m.params(), [7, 4]
             test.done()
 
@@ -102,7 +102,7 @@ module.exports =
             m = mohair()
             m.update 'project', changes, {id: 7}
 
-            test.equals m.sql(), 'UPDATE project SET `name` = ?, `hidden` = ? WHERE id = ?;\n'
+            test.equals m.sql(), 'UPDATE project SET `name` = ?, `hidden` = ? WHERE `id` = ?;\n'
             test.deepEqual m.params(), ['Even more amazing project', true, 7]
             test.done()
 
@@ -115,7 +115,7 @@ module.exports =
 
             m.update 'project', changes, {id: 7}
 
-            test.equals m.sql(), 'UPDATE project SET `name` = ?, `updated_on` = NOW() WHERE id = ?;\n'
+            test.equals m.sql(), 'UPDATE project SET `name` = ?, `updated_on` = NOW() WHERE `id` = ?;\n'
             test.deepEqual m.params(), ['Even more amazing project', 7]
             test.done()
 
@@ -124,7 +124,7 @@ module.exports =
 
         m.remove 'project', {id: 7, hidden: true}
 
-        test.equals m.sql(), 'DELETE FROM project WHERE id = ? AND hidden = ?;\n'
+        test.equals m.sql(), 'DELETE FROM project WHERE `id` = ? AND `hidden` = ?;\n'
         test.deepEqual m.params(), [7, true]
         test.done()
 
@@ -135,7 +135,7 @@ module.exports =
             m.remove 'project', {id: 7}
             m.update 'project', {name: 'New name'}, {id: 8}
 
-        test.equals m.sql(), 'START TRANSACTION;\nDELETE FROM project WHERE id = ?;\nUPDATE project SET `name` = ? WHERE id = ?;\nCOMMIT;\n'
+        test.equals m.sql(), 'START TRANSACTION;\nDELETE FROM project WHERE `id` = ?;\nUPDATE project SET `name` = ? WHERE `id` = ?;\nCOMMIT;\n'
         test.deepEqual m.params(), [7, 'New name', 8]
         test.done()
 
@@ -155,7 +155,7 @@ module.exports =
 
             m.select 'project', ['name', 'id'], {hidden: true}
 
-            test.equals m.sql(), 'SELECT name, id FROM project WHERE hidden = ?;\n'
+            test.equals m.sql(), 'SELECT name, id FROM project WHERE `hidden` = ?;\n'
             test.deepEqual m.params(), [true]
             test.done()
 
@@ -168,7 +168,7 @@ module.exports =
                 m.groupBy 'project.id'
                 m.orderBy 'project.created_on DESC'
 
-            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM project WHERE id = ? LEFT JOIN task ON project.id = task.project_id GROUP BY project.id ORDER BY project.created_on DESC;\n'
+            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM project WHERE `id` = ? LEFT JOIN task ON project.id = task.project_id GROUP BY project.id ORDER BY project.created_on DESC;\n'
             test.deepEqual m.params(), [7]
             test.done()
 
@@ -182,7 +182,7 @@ module.exports =
                 hidden: true
                 name: -> m.quoted 'Another Project'
 
-            test.equals m.sql(), "project_id = ? AND hidden = ? AND name = 'Another Project'"
+            test.equals m.sql(), "`project_id` = ? AND `hidden` = ? AND `name` = 'Another Project'"
             test.deepEqual m.params(), [6, true]
             test.done()
 
@@ -196,7 +196,7 @@ module.exports =
                     {name: -> m.quoted 'Another Project'}
                 ]
 
-            test.equals m.sql(), "(project_id = ? OR hidden = ? OR name = 'Another Project')"
+            test.equals m.sql(), "(`project_id` = ? OR `hidden` = ? OR `name` = 'Another Project')"
             test.deepEqual m.params(), [6, true]
             test.done()
 
@@ -213,7 +213,7 @@ module.exports =
                     ]}
                 ]
 
-            test.equals m.sql(), "project_id = ? AND (hidden = ? OR name = 'Another Project' AND owner_id = ?)"
+            test.equals m.sql(), "`project_id` = ? AND (`hidden` = ? OR `name` = 'Another Project' AND `owner_id` = ?)"
             test.deepEqual m.params(), [6, true, 8]
             test.done()
 
@@ -230,7 +230,7 @@ module.exports =
                     ]}
                 ]
 
-            test.equals m.sql(), "project_id < ? AND (hidden = ? OR name != 'Another Project' AND owner_id >= ?)"
+            test.equals m.sql(), "`project_id` < ? AND (`hidden` = ? OR `name` != 'Another Project' AND `owner_id` >= ?)"
             test.deepEqual m.params(), [6, true, 8]
             test.done()
 
@@ -247,7 +247,7 @@ module.exports =
                     ]
                 ]
 
-            test.equals m.sql(), "id = ? AND (owner_id = ? OR cost > ? AND cost < ?)"
+            test.equals m.sql(), "`id` = ? AND (`owner_id` = ? OR `cost` > ? AND `cost` < ?)"
             test.deepEqual m.params(), [7, 10, 500, 1000]
             test.done()
 
@@ -259,7 +259,7 @@ module.exports =
                 owner_id: {$in: [10]}
                 name: {$in: ['Ann', 'Rick']}
 
-            test.equals m.sql(), 'id IN (?, ?, ?, ?) AND owner_id IN (?) AND name IN (?, ?)'
+            test.equals m.sql(), '`id` IN (?, ?, ?, ?) AND `owner_id` IN (?) AND `name` IN (?, ?)'
             test.deepEqual m.params(), [3, 5, 8, 9, 10, 'Ann', 'Rick']
             test.done()
 
@@ -271,7 +271,7 @@ module.exports =
                     id: 9
                     name: 'Ann'
 
-            test.equals m.sql(), 'NOT (id = ? AND name = ?)'
+            test.equals m.sql(), 'NOT (`id` = ? AND `name` = ?)'
             test.deepEqual m.params(), [9, 'Ann']
             test.done()
 
@@ -287,7 +287,7 @@ module.exports =
                     }}
                 ]
 
-            test.equals m.sql(), '(name = ? OR NOT (id = ? AND name = ?))'
+            test.equals m.sql(), '(`name` = ? OR NOT (`id` = ? AND `name` = ?))'
             test.deepEqual m.params(), ['Ann', 9, 'Rick']
             test.done()
 
@@ -303,7 +303,7 @@ module.exports =
                     }
                 ]
 
-            test.equals m.sql(), 'NOT (name = ? OR id = ? AND name = ?)'
+            test.equals m.sql(), 'NOT (`name` = ? OR `id` = ? AND `name` = ?)'
             test.deepEqual m.params(), ['Ann', 9, 'Rick']
             test.done()
 
@@ -315,7 +315,7 @@ module.exports =
                 owner_id: {$nin: [10]}
                 name: {$nin: ['Ann', 'Rick']}
 
-            test.equals m.sql(), 'id NOT IN (?, ?, ?, ?) AND owner_id NOT IN (?) AND name NOT IN (?, ?)'
+            test.equals m.sql(), '`id` NOT IN (?, ?, ?, ?) AND `owner_id` NOT IN (?) AND `name` NOT IN (?, ?)'
             test.deepEqual m.params(), [3, 5, 8, 9, 10, 'Ann', 'Rick']
             test.done()
 
@@ -328,7 +328,7 @@ module.exports =
                     {foo: 'id'}
                 ]
 
-            test.equals m.sql(), '(id = ? OR foo = ?)'
+            test.equals m.sql(), '(`id` = ? OR `foo` = ?)'
             test.deepEqual m.params(), ['foo', 'id']
             test.done()
 

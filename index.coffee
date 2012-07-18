@@ -141,7 +141,7 @@ Mohair = class
         @intersperse ' AND ', query, (value, key) =>
             return @_queryModifiers[key] value if @_queryModifiers[key]?
 
-            @raw key
+            @raw backtick(key)
 
             isTest = _.isObject(value) and (not _.isFunction(value)) and (not _.isString(value))
 
