@@ -1,17 +1,22 @@
 assert = require 'assert'
 
-newMysqlPlaceholderGenerator = ->
-    -> '?'
-newPostgresPlaceholderGenerator = ->
-    i = 1
-    -> "$#{i++}"
+mysql =
+    getPlaceholderGenerator: ->
+        -> '?'
+    quoteField: (field) -> "`#{field}`"
 
-backtick = (s) -> "`#{s}`"
+postgres =
+    getPlaceholderGenerator: ->
+        i = 1
+        -> "$#{i++}"
+    quoteField: (field) -> "\"#{field}\""
+
 values = (obj) -> Object.keys(obj).map (key) -> obj[key]
 
 Mohair = class
 
-    constructor: (@getNextPlaceholder = newMysqlPlaceholderGenerator()) ->
+    constructor: (@options = mysql) ->
+        @getNextPlaceholder = @options.getPlaceholderGenerator()
         @_sql = ''
         @_params = []
 
@@ -83,7 +88,7 @@ Mohair = class
     # {key1} = {value1()}, {key2} = {value2()}, ...
     assignments: (obj) ->
         @intersperse ', ', obj, (value, column) =>
-            @before "#{backtick(column)} = ", => @callOrBind value
+            @before "#{@options.quoteField(column)} = ", => @callOrBind value
 
     # Interface
     # =========
@@ -93,7 +98,8 @@ Mohair = class
         objects = if Array.isArray objects then objects else [objects]
         return @command "INSERT INTO #{table} () VALUES ()" if objects.length is 0
         keys = Object.keys objects[0]
-        @command "INSERT INTO #{table} (#{keys.map(backtick).join(', ')}) VALUES ", =>
+        columnString = keys.map(@options.quoteField).join(', ')
+        @command "INSERT INTO #{table} (#{columnString}) VALUES ", =>
             @intersperse ', ', objects, (object, index) =>
                 assert.deepEqual keys, Object.keys(object),
                     'objects must have the same keys'
@@ -150,7 +156,7 @@ Mohair = class
         @intersperse ' AND ', query, (value, key) =>
             return @_queryModifiers[key] value if @_queryModifiers[key]?
 
-            @raw backtick(key)
+            @raw @options.quoteField(key)
 
             isTest = typeof value is 'object'
             test = @_tests[if isTest then Object.keys(value)[0] else '$eq']
@@ -162,6 +168,6 @@ Mohair = class
             throw new Error msg
         @intersperse " #{op} ", list, (x) => @query x
 
-module.exports = (placeholderGenerator) -> new Mohair placeholderGenerator
-module.exports.newMysqlPlaceholderGenerator = newMysqlPlaceholderGenerator
-module.exports.newPostgresPlaceholderGenerator = newPostgresPlaceholderGenerator
+module.exports = (options) -> new Mohair options
+module.exports.mysql = mysql
+module.exports.postgres = postgres
