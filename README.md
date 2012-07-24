@@ -215,6 +215,8 @@ m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
     m.where {'project.visible': true}
     m.groupBy 'project.id'
     m.orderBy 'project.created_on DESC'
+    m.limit 5
+    m.skip -> m.raw '6'
 ```
 
 `m.sql()` returns:
@@ -227,13 +229,15 @@ FROM `project`
 LEFT JOIN `task` ON `project`.`id` = `task`.`project_id`
 WHERE `project`.`visible` = ?
 GROUP BY `project`.`id`
-ORDER BY  `project`.`created_on` DESC;
+ORDER BY `project`.`created_on` DESC
+LIMIT ?
+SKIP 6;
 ```
 
 `m.params()` returns:
 
 ```coffeescript
-[true]
+[true, 5]
 ```
 
 **Note:** use `join`, `leftJoin`, `rightJoin`, and `innerJoin` as needed.

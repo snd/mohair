@@ -151,6 +151,14 @@ Mohair = class
 
     orderBy: (column, direction) -> @raw " ORDER BY #{@quote column} #{direction}"
 
+    limit: (count) ->
+        @raw " LIMIT "
+        @callOrBind count
+
+    skip: (count) ->
+        @raw " SKIP "
+        @callOrBind count
+
     # Query
     # =====
 

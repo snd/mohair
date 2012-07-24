@@ -167,9 +167,11 @@ module.exports =
                 m.leftJoin 'task', 'project.id' , 'task.project_id'
                 m.groupBy 'project.id'
                 m.orderBy 'project.created_on', 'DESC'
+                m.limit 5
+                m.skip -> m.raw '6'
 
-            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM `project` WHERE `id` = ? LEFT JOIN `task` ON `project`.`id` = `task`.`project_id` GROUP BY `project`.`id` ORDER BY `project`.`created_on` DESC;\n'
-            test.deepEqual m.params(), [7]
+            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM `project` WHERE `id` = ? LEFT JOIN `task` ON `project`.`id` = `task`.`project_id` GROUP BY `project`.`id` ORDER BY `project`.`created_on` DESC LIMIT ? SKIP 6;\n'
+            test.deepEqual m.params(), [7, 5]
             test.done()
 
     'query':
