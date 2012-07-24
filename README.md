@@ -275,7 +275,7 @@ m.transaction ->
 `m.sql()` returns:
 
 ```sql
-START TRANSACTION;
+BEGIN;
 DELETE FROM project WHERE `id` = ?;
 UPDATE project SET `name` = ? WHERE `id` = ?;
 COMMIT;

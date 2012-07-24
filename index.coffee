@@ -126,7 +126,7 @@ Mohair = class
         @command "SELECT #{columns} FROM #{table}", =>
             @callOrQuery f if f?
 
-    transaction: (inner) -> @around 'START TRANSACTION;\n', 'COMMIT;\n', inner
+    transaction: (inner) -> @around 'BEGIN;\n', 'COMMIT;\n', inner
 
     # Select inner
     # ------------

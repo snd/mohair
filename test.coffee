@@ -135,7 +135,7 @@ module.exports =
             m.remove 'project', {id: 7}
             m.update 'project', {name: 'New name'}, {id: 8}
 
-        test.equals m.sql(), 'START TRANSACTION;\nDELETE FROM project WHERE `id` = ?;\nUPDATE project SET `name` = ? WHERE `id` = ?;\nCOMMIT;\n'
+        test.equals m.sql(), 'BEGIN;\nDELETE FROM project WHERE `id` = ?;\nUPDATE project SET `name` = ? WHERE `id` = ?;\nCOMMIT;\n'
         test.deepEqual m.params(), [7, 'New name', 8]
         test.done()
 
