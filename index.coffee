@@ -3,13 +3,13 @@ assert = require 'assert'
 mysql =
     getPlaceholderGenerator: ->
         -> '?'
-    quoteField: (field) -> "`#{field}`"
+    escapeName: (field) -> "`#{field}`"
 
 postgres =
     getPlaceholderGenerator: ->
         i = 1
         -> "$#{i++}"
-    quoteField: (field) -> "\"#{field}\""
+    escapeName: (field) -> "\"#{field}\""
 
 values = (obj) -> Object.keys(obj).map (key) -> obj[key]
 
@@ -88,7 +88,7 @@ Mohair = class
     # {key1} = {value1()}, {key2} = {value2()}, ...
     assignments: (obj) ->
         @intersperse ', ', obj, (value, column) =>
-            @before "#{@options.quoteField(column)} = ", => @callOrBind value
+            @before "#{@options.escapeName(column)} = ", => @callOrBind value
 
     # Interface
     # =========
@@ -98,7 +98,7 @@ Mohair = class
         objects = if Array.isArray objects then objects else [objects]
         return @command "INSERT INTO #{table} () VALUES ()" if objects.length is 0
         keys = Object.keys objects[0]
-        columnString = keys.map(@options.quoteField).join(', ')
+        columnString = keys.map(@options.escapeName).join(', ')
         @command "INSERT INTO #{table} (#{columnString}) VALUES ", =>
             @intersperse ', ', objects, (object, index) =>
                 assert.deepEqual keys, Object.keys(object),
@@ -156,7 +156,7 @@ Mohair = class
         @intersperse ' AND ', query, (value, key) =>
             return @_queryModifiers[key] value if @_queryModifiers[key]?
 
-            @raw @options.quoteField(key)
+            @raw @options.escapeName(key)
 
             isTest = typeof value is 'object'
             test = @_tests[if isTest then Object.keys(value)[0] else '$eq']
