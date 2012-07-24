@@ -171,5 +171,5 @@ Mohair = class
         @intersperse " #{op} ", list, (x) => @query x
 
 module.exports = (options) -> new Mohair options
-module.exports.mysql = mysql
-module.exports.postgres = postgres
+module.exports.mysql = -> new Mohair mysql
+module.exports.postgres = -> new Mohair postgres

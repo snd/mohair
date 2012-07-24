@@ -346,7 +346,7 @@ module.exports =
 
     'postgres': (test) ->
 
-        m = mohair mohair.postgres
+        m = mohair.postgres()
 
         m.query
             $or: [
