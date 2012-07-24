@@ -3,13 +3,13 @@ assert = require 'assert'
 mysql =
     getPlaceholderGenerator: ->
         -> '?'
-    quote: (name) -> "`#{name}`"
+    quote: (string) -> string.split('.').map((part) -> "`#{part}`").join('.')
 
 postgres =
     getPlaceholderGenerator: ->
         i = 1
         -> "$#{i++}"
-    quote: (field) -> "\"#{field}\""
+    quote: (string) -> string.split('.').map((part) -> "\"#{part}\"").join('.')
 
 values = (obj) -> Object.keys(obj).map (key) -> obj[key]
 
@@ -17,6 +17,8 @@ Mohair = class
 
     constructor: (@options = mysql) ->
         @getNextPlaceholder = @options.getPlaceholderGenerator()
+        @quote = @options.quote
+
         @_sql = ''
         @_params = []
 
@@ -88,7 +90,7 @@ Mohair = class
     # {key1} = {value1()}, {key2} = {value2()}, ...
     assignments: (obj) ->
         @intersperse ', ', obj, (value, column) =>
-            @before "#{@options.quote(column)} = ", => @callOrBind value
+            @before "#{@quote(column)} = ", => @callOrBind value
 
     # Interface
     # =========
@@ -96,10 +98,10 @@ Mohair = class
     insert: (table, objects, updates) ->
         throw new Error 'second argument missing in insert' if not objects?
         objects = if Array.isArray objects then objects else [objects]
-        return @command "INSERT INTO #{table} () VALUES ()" if objects.length is 0
+        return @command "INSERT INTO #{@quote table} () VALUES ()" if objects.length is 0
         keys = Object.keys objects[0]
-        columnString = keys.map(@options.quote).join(', ')
-        @command "INSERT INTO #{table} (#{columnString}) VALUES ", =>
+        columnString = keys.map(@quote).join(', ')
+        @command "INSERT INTO #{@quote table} (#{columnString}) VALUES ", =>
             @intersperse ', ', objects, (object, index) =>
                 assert.deepEqual keys, Object.keys(object),
                     'objects must have the same keys'
@@ -111,19 +113,19 @@ Mohair = class
                 @assignments updates
 
     update: (table, changes, f) ->
-        @command "UPDATE #{table} SET ", =>
+        @command "UPDATE #{@quote table} SET ", =>
             @assignments changes
 
             @callOrQuery f
 
-    remove: (table, f) -> @command "DELETE FROM #{table}", => @callOrQuery f
+    remove: (table, f) -> @command "DELETE FROM #{@quote table}", => @callOrQuery f
 
     select: (table, columns, f) ->
         if not f?
             f = columns
             columns = '*'
         columns = columns.join(', ') if Array.isArray columns
-        @command "SELECT #{columns} FROM #{table}", =>
+        @command "SELECT #{columns} FROM #{@quote table}", =>
             @callOrQuery f if f?
 
     transaction: (inner) -> @around 'BEGIN;\n', 'COMMIT;\n', inner
@@ -138,16 +140,16 @@ Mohair = class
         @raw if not left?
             "#{prefix} JOIN #{table}"
         else
-            "#{prefix} JOIN #{table} ON #{left} = #{right}"
+            "#{prefix} JOIN #{@quote table} ON #{@quote left} = #{@quote right}"
 
     join: (args...) -> @_join '', args...
     leftJoin: (args...) -> @_join ' LEFT', args...
     rightJoin: (args...) -> @_join ' RIGHT', args...
     innerJoin: (args...) -> @_join ' INNER', args...
 
-    groupBy: (column) -> @raw " GROUP BY #{column}"
+    groupBy: (column) -> @raw " GROUP BY #{@quote column}"
 
-    orderBy: (sql) -> @raw " ORDER BY #{sql}"
+    orderBy: (column, direction) -> @raw " ORDER BY #{@quote column} #{direction}"
 
     # Query
     # =====
@@ -156,7 +158,7 @@ Mohair = class
         @intersperse ' AND ', query, (value, key) =>
             return @_queryModifiers[key] value if @_queryModifiers[key]?
 
-            @raw @options.quote(key)
+            @raw @quote(key)
 
             isTest = typeof value is 'object'
             test = @_tests[if isTest then Object.keys(value)[0] else '$eq']

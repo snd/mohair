@@ -51,7 +51,7 @@ m.insert 'project',
 `m.sql()` returns:
 
 ```sql
-INSERT INTO project (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?);
+INSERT INTO `project` (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?);
 ```
 
 `m.params()` returns:
@@ -74,7 +74,7 @@ insert 'project', [
 `sql()` returns:
 
 ```sql
-INSERT INTO project (`name`, `hidden`) VALUES (?, ?), (?, ?);
+INSERT INTO `project` (`name`, `hidden`) VALUES (?, ?), (?, ?);
 ```
 
 `params()` returns:
@@ -99,7 +99,7 @@ m.insert 'project',
 `m.sql()` returns:
 
 ```sql
-INSERT INTO project (`name,` `created_on`, `user_id`) VALUES (?, NOW(), LAST_INSERT_ID());
+INSERT INTO `project` (`name,` `created_on`, `user_id`) VALUES (?, NOW(), LAST_INSERT_ID());
 ```
 
 `m.params()` returns:
@@ -127,7 +127,7 @@ m.insert 'project', {
 `m.sql()` returns:
 
 ```sql
-INSERT INTO project (`id`, `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `update_count` = update_count + 1;
+INSERT INTO `project` (`id`, `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `update_count` = update_count + 1;
 ```
 
 `m.params()` returns:
@@ -152,7 +152,7 @@ m.update 'project', {
 `m.sql()` returns:
 
 ```sql
-UPDATE project SET `name` = ?, `hidden` = ? WHERE `id` = ?;
+UPDATE `project` SET `name` = ?, `hidden` = ? WHERE `id` = ?;
 ```
 
 `m.params()` returns:
@@ -172,7 +172,7 @@ m.select 'project'
 `m.sql()` returns:
 
 ```sql
-SELECT * FROM project;
+SELECT * FROM `project`;
 ```
 
 `m.params()` returns:
@@ -196,7 +196,7 @@ m.select 'project', ['name', 'id'], {hidden: true}
 `m.sql()` returns:
 
 ```sql
-SELECT name, id FROM project WHERE `hidden` = ?;
+SELECT name, id FROM `project` WHERE `hidden` = ?;
 ```
 
 `m.params()` returns:
@@ -223,11 +223,11 @@ m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
 SELECT
     count(task.id) AS taskCount,
     project.*
-FROM project
-LEFT JOIN task ON project.id = task.project_id
-WHERE `project.visible` = ?
-GROUP BY project.id
-ORDER BY project.created_on DESC;
+FROM `project`
+LEFT JOIN `task` ON `project`.`id` = `task`.`project_id`
+WHERE `project`.`visible` = ?
+GROUP BY `project`.`id`
+ORDER BY  `project`.`created_on` DESC;
 ```
 
 `m.params()` returns:
@@ -251,7 +251,7 @@ m.remove 'project', {id: 7, hidden: true}
 `m.sql()` returns:
 
 ```sql
-DELETE FROM project WHERE `id` = ? AND `hidden` = ?;
+DELETE FROM `project` WHERE `id` = ? AND `hidden` = ?;
 ```
 
 `m.params()` returns:
@@ -276,8 +276,8 @@ m.transaction ->
 
 ```sql
 BEGIN;
-DELETE FROM project WHERE `id` = ?;
-UPDATE project SET `name` = ? WHERE `id` = ?;
+DELETE FROM `project` WHERE `id` = ?;
+UPDATE `project` SET `name` = ? WHERE `id` = ?;
 COMMIT;
 ```
 
@@ -291,13 +291,13 @@ COMMIT;
 ```coffeescript
 m = require('mohair')()
 
-m.raw 'SELECT * FROM project WHERE `id` = ?;', 7
+m.raw 'SELECT * FROM `project` WHERE `id` = ?;', 7
 ```
 
 `m.sql()` returns:
 
 ```sql
-SELECT * FROM project WHERE `id` = ?;
+SELECT * FROM `project` WHERE `id` = ?;
 ```
 
 `m.params()` returns:
