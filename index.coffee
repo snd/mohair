@@ -118,7 +118,7 @@ Mohair = class
 
             @callOrQuery f
 
-    remove: (table, f) -> @command "DELETE FROM #{@quote table}", => @callOrQuery f
+    delete: (table, f) -> @command "DELETE FROM #{@quote table}", => @callOrQuery f
 
     select: (table, columns, f) ->
         if not f?

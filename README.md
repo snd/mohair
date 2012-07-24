@@ -240,12 +240,12 @@ ORDER BY  `project`.`created_on` DESC;
 
 **Note:** `where` takes a query object. see section `Query language` below for details.
 
-#### remove
+#### delete
 
 ```coffeescript
 m = require('mohair')()
 
-m.remove 'project', {id: 7, hidden: true}
+m.delete 'project', {id: 7, hidden: true}
 ```
 
 `m.sql()` returns:

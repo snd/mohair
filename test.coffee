@@ -119,10 +119,10 @@ module.exports =
             test.deepEqual m.params(), ['Even more amazing project', 7]
             test.done()
 
-    'remove': (test) ->
+    'delete': (test) ->
         m = mohair()
 
-        m.remove 'project', {id: 7, hidden: true}
+        m.delete 'project', {id: 7, hidden: true}
 
         test.equals m.sql(), 'DELETE FROM `project` WHERE `id` = ? AND `hidden` = ?;\n'
         test.deepEqual m.params(), [7, true]
@@ -132,7 +132,7 @@ module.exports =
         m = mohair()
 
         m.transaction ->
-            m.remove 'project', {id: 7}
+            m.delete 'project', {id: 7}
             m.update 'project', {name: 'New name'}, {id: 8}
 
         test.equals m.sql(), 'BEGIN;\nDELETE FROM `project` WHERE `id` = ?;\nUPDATE `project` SET `name` = ? WHERE `id` = ?;\nCOMMIT;\n'
