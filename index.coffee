@@ -15,9 +15,9 @@ values = (obj) -> Object.keys(obj).map (key) -> obj[key]
 
 Mohair = class
 
-    constructor: (@options = mysql) ->
-        @getNextPlaceholder = @options.getPlaceholderGenerator()
-        @quote = @options.quote
+    constructor: (@database = mysql) ->
+        @getNextPlaceholder = @database.getPlaceholderGenerator()
+        @quote = @database.quote
 
         @_sql = ''
         @_params = []
@@ -178,6 +178,6 @@ Mohair = class
             throw new Error msg
         @intersperse " #{op} ", list, (x) => @query x
 
-module.exports = (options) -> new Mohair options
+module.exports = (database) -> new Mohair database
 module.exports.mysql = -> new Mohair mysql
 module.exports.postgres = -> new Mohair postgres
