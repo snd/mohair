@@ -108,33 +108,29 @@ INSERT INTO `project` (`name,` `created_on`, `user_id`) VALUES (?, NOW(), LAST_I
 ['Another Project']
 ```
 
-#### update on duplicate key
-
-use the optional third parameter:
+#### upsert
 
 ```coffeescript
 m = require('mohair')()
 
-m.insert 'project', {
-    id: 'foo'
+m.upsert 'project', {id: 'foo'},
     name: 'bar'
-}, {
-    name: 'bar'
-    update_count: -> m.raw 'update_count + 1'
-}
 ```
 
 `m.sql()` returns:
 
 ```sql
-INSERT INTO `project` (`id`, `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `update_count` = update_count + 1;
+INSERT INTO `project` (`id`, `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `id` = ?, `name` = ?;
 ```
 
 `m.params()` returns:
 
 ```coffeescript
-['foo', 'bar', 'bar']
+['foo', 'bar', 'foo', 'bar']
 ```
+
+**Note:** the first argument is a seperate mapping for the key of the table.
+It isn't needed for the special mysql syntax `ON DUPLICATE KEY UPDATE` but for upserts in postgres.
 
 #### update a row
 

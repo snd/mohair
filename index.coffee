@@ -5,11 +5,42 @@ mysql =
         -> '?'
     quote: (string) -> string.split('.').map((part) -> "`#{part}`").join('.')
 
+    upsert: (table, keyObject, object) ->
+        throw new Error 'second argument must be an object' if not typeof keyObject is 'object'
+        throw new Error 'third argument must be an object' if not typeof object is 'object'
+        combined = {}
+        combined[k] = v for k, v of keyObject
+        combined[k] = v for k, v of object
+        keys = Object.keys combined
+        columnString = keys.map(@quote).join(', ')
+        @command "INSERT INTO #{@quote table} (#{columnString}) VALUES ", =>
+            @array values combined
+            @raw ' ON DUPLICATE KEY UPDATE '
+            @assignments combined
+
 postgres =
     getPlaceholderGenerator: ->
         i = 1
         -> "$#{i++}"
     quote: (string) -> string.split('.').map((part) -> "\"#{part}\"").join('.')
+
+    upsert: (table, keyObject, object) ->
+        throw new Error 'second argument must be an object' if not typeof keyObject is 'object'
+        throw new Error 'third argument must be an object' if not typeof object is 'object'
+        combined = {}
+        combined[k] = v for k, v of keyObject
+        combined[k] = v for k, v of object
+
+        @update table, combined, keyObject
+
+        keys = Object.keys combined
+        columnString = keys.map(@quote).join(', ')
+
+        @command "INSERT INTO #{@quote table} (#{columnString}) SELECT ", =>
+            @intersperse ', ', values(combined), @callOrBind
+            @raw " WHERE NOT EXISTS (SELECT 1 FROM #{@quote table} WHERE "
+            @query keyObject
+            @raw ")"
 
 values = (obj) -> Object.keys(obj).map (key) -> obj[key]
 
@@ -107,10 +138,6 @@ Mohair = class
                     'objects must have the same keys'
 
                 @array values object
-            if updates?
-                throw new Error 'empty updates object' if Object.keys(updates).length is 0
-                @raw ' ON DUPLICATE KEY UPDATE '
-                @assignments updates
 
     update: (table, changes, f) ->
         @command "UPDATE #{@quote table} SET ", =>
@@ -129,6 +156,11 @@ Mohair = class
             @callOrQuery f if f?
 
     transaction: (inner) -> @around 'BEGIN;\n', 'COMMIT;\n', inner
+
+    upsert: ->
+        if not @database.upsert?
+            throw new Error 'upsert not implemented for selected database'
+        @database.upsert.apply @, arguments
 
     # Select inner
     # ------------
