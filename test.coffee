@@ -195,6 +195,12 @@ module.exports =
                 test.equals m.sql(), ' ORDER BY `foo`, `bar`'
                 test.done()
 
+            'string and asc': (test) ->
+                m = mohair()
+                m.orderBy ['foo', {$asc: 'bar'}]
+                test.equals m.sql(), ' ORDER BY `foo`, `bar` ASC'
+                test.done()
+
             'asc and desc': (test) ->
                 m = mohair()
                 m.orderBy [{$asc: 'foo'}, {$desc: 'bar'}]
