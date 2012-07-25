@@ -181,7 +181,18 @@ Mohair = class
 
     groupBy: (column) -> @raw " GROUP BY #{@quote column}"
 
-    orderBy: (column, direction) -> @raw " ORDER BY #{@quote column} #{direction}"
+    orderBy: (xs) ->
+        xs = [xs] if not Array.isArray xs
+        @raw " ORDER BY "
+        @intersperse ', ', xs, (x) =>
+            if typeof x is 'string'
+                @raw @quote x
+            else if typeof x is 'object'
+                if x['$asc']
+                    @raw @quote(x['$asc']) + ' ASC'
+                else if x['$desc']
+                    @raw @quote(x['$desc']) + ' DESC'
+                else throw new Error "invalid order #{JSON.stringify x}"
 
     limit: (count) ->
         @raw " LIMIT "

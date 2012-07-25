@@ -210,7 +210,7 @@ m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
     m.leftJoin 'task', 'project.id' , 'task.project_id'
     m.where {'project.visible': true}
     m.groupBy 'project.id'
-    m.orderBy 'project.created_on DESC'
+    m.orderBy {$desc: 'project.created_on}
     m.limit 5
     m.skip -> m.raw '6'
 ```

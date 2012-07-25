@@ -155,12 +155,56 @@ module.exports =
                     m.where {id: 7}
                     m.leftJoin 'task', 'project.id' , 'task.project_id'
                     m.groupBy 'project.id'
-                    m.orderBy 'project.created_on', 'DESC'
+                    m.orderBy 'project.created_on'
                     m.limit 5
                     m.skip -> m.raw '6'
 
-                test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM `project` WHERE `id` = ? LEFT JOIN `task` ON `project`.`id` = `task`.`project_id` GROUP BY `project`.`id` ORDER BY `project`.`created_on` DESC LIMIT ? SKIP 6;\n'
+                test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM `project` WHERE `id` = ? LEFT JOIN `task` ON `project`.`id` = `task`.`project_id` GROUP BY `project`.`id` ORDER BY `project`.`created_on` LIMIT ? SKIP 6;\n'
                 test.deepEqual m.params(), [7, 5]
+                test.done()
+
+        'orderBy':
+
+            'one string': (test) ->
+                m = mohair()
+                m.orderBy 'foo'
+                test.equals m.sql(), ' ORDER BY `foo`'
+                test.done()
+
+            'one asc': (test) ->
+                m = mohair()
+                m.orderBy {$asc: 'foo'}
+                test.equals m.sql(), ' ORDER BY `foo` ASC'
+                test.done()
+
+            'one desc': (test) ->
+                m = mohair()
+                m.orderBy {$desc: 'foo'}
+                test.equals m.sql(), ' ORDER BY `foo` DESC'
+                test.done()
+
+            'one invalid': (test) ->
+                m = mohair()
+                test.throws ->
+                    m.orderBy {foo: 'foo'}
+                test.done()
+
+            'two strings': (test) ->
+                m = mohair()
+                m.orderBy ['foo', 'bar']
+                test.equals m.sql(), ' ORDER BY `foo`, `bar`'
+                test.done()
+
+            'asc and desc': (test) ->
+                m = mohair()
+                m.orderBy [{$asc: 'foo'}, {$desc: 'bar'}]
+                test.equals m.sql(), ' ORDER BY `foo` ASC, `bar` DESC'
+                test.done()
+
+            'one of two invalid': (test) ->
+                m = mohair()
+                test.throws ->
+                    m.orderBy [{foo: 'foo'}, {$asc: 'bar'}]
                 test.done()
 
         'query':
@@ -355,11 +399,11 @@ module.exports =
                 m.where {$or: [{id: 7}, {foo: 'id'}]}
                 m.leftJoin 'task', 'project.id' , 'task.project_id'
                 m.groupBy 'project.id'
-                m.orderBy 'project.created_on', 'DESC'
+                m.orderBy 'project.created_on'
                 m.limit 5
                 m.skip -> m.raw '6'
 
-            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM "project" WHERE ("id" = $1 OR "foo" = $2) LEFT JOIN "task" ON "project"."id" = "task"."project_id" GROUP BY "project"."id" ORDER BY "project"."created_on" DESC LIMIT $3 SKIP 6;\n'
+            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM "project" WHERE ("id" = $1 OR "foo" = $2) LEFT JOIN "task" ON "project"."id" = "task"."project_id" GROUP BY "project"."id" ORDER BY "project"."created_on" LIMIT $3 SKIP 6;\n'
             test.deepEqual m.params(), [7, 'id', 5]
             test.done()
 
