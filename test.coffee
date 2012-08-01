@@ -108,6 +108,18 @@ module.exports =
                 test.deepEqual m.params(), ['Even more amazing project', 7]
                 test.done()
 
+            'without condition': (test) ->
+                changes =
+                    name: 'Even more amazing project'
+                    hidden: true
+
+                m = mohair()
+                m.update 'project', changes
+
+                test.equals m.sql(), 'UPDATE `project` SET `name` = ?, `hidden` = ?;\n'
+                test.deepEqual m.params(), ['Even more amazing project', true]
+                test.done()
+
         'delete': (test) ->
             m = mohair()
 

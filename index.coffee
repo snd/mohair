@@ -113,7 +113,9 @@ Mohair = class
 
     command: (start, inner) -> @around start, ';\n', inner
 
-    callOrQuery: (f) -> if typeof f is 'function' then f() else @where f
+    callOrQuery: (f) ->
+        return if not f?
+        if typeof f is 'function' then f() else @where f
 
     callOrBind: (f) =>
         if typeof f is 'function' then f() else @raw @getNextPlaceholder(), f
