@@ -1,3 +1,7 @@
 node_modules/**
 issues.md
 v2.coffee
+v2-test.coffee
+v2-mockup.coffee
+where.coffee
+mysql.coffee
