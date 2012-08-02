@@ -128,7 +128,7 @@ Mohair = class
     # Interface
     # =========
 
-    insert: (table, objects, updates) ->
+    insert: (table, objects, suffix) ->
         throw new Error 'second argument missing in insert' if not objects?
         objects = if Array.isArray objects then objects else [objects]
         return @command "INSERT INTO #{@quote table} () VALUES ()" if objects.length is 0
@@ -140,6 +140,7 @@ Mohair = class
                     'objects must have the same keys'
 
                 @array values object
+            suffix?()
 
     update: (table, changes, f) ->
         @command "UPDATE #{@quote table} SET ", =>
