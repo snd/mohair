@@ -151,11 +151,15 @@ Mohair = class
     delete: (table, f) -> @command "DELETE FROM #{@quote table}", => @callOrQuery f
 
     select: (table, columns, f) ->
+        tableString = if typeof table is 'string' then @quote table else
+            tableName = Object.keys(table)[0]
+            "#{@quote tableName} AS #{@quote table[tableName]}"
+
         if not f?
             f = columns
             columns = ['*']
         columns = columns.join(', ') if Array.isArray columns
-        @command "SELECT #{columns} FROM #{@quote table}", =>
+        @command "SELECT #{columns} FROM #{tableString}", =>
             @callOrQuery f
 
     transaction: (inner) -> @around 'BEGIN;\n', 'COMMIT;\n', inner

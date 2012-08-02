@@ -171,6 +171,15 @@ module.exports =
                 test.deepEqual m.params(), [true]
                 test.done()
 
+            'select as': (test) ->
+                m = mohair()
+
+                m.select {project: 'foo'}, ['name', 'id'], {hidden: true}
+
+                test.equals m.sql(), 'SELECT name, id FROM `project` AS `foo` WHERE `hidden` = ?;\n'
+                test.deepEqual m.params(), [true]
+                test.done()
+
             'join, groupBy and orderBy': (test) ->
                 m = mohair()
 
