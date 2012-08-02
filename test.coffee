@@ -186,12 +186,23 @@ module.exports =
                 m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
                     m.where {id: 7}
                     m.leftJoin 'task', 'project.id' , 'task.project_id'
+                    m.leftJoin {task: 'other_task'}, 'project.id' , 'task.project_id'
                     m.groupBy 'project.id'
                     m.orderBy 'project.created_on'
                     m.limit 5
                     m.skip -> m.raw '6'
 
-                test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM `project` WHERE `id` = ? LEFT JOIN `task` ON `project`.`id` = `task`.`project_id` GROUP BY `project`.`id` ORDER BY `project`.`created_on` LIMIT ? SKIP 6;\n'
+                expected = [
+                    'SELECT count(task.id) AS taskCount, project.*'
+                    'FROM `project`'
+                    'WHERE `id` = ?'
+                    'LEFT JOIN `task` ON `project`.`id` = `task`.`project_id`'
+                    'LEFT JOIN `task` AS `other_task` ON `project`.`id` = `task`.`project_id`'
+                    'GROUP BY `project`.`id` ORDER BY `project`.`created_on`'
+                    'LIMIT ? SKIP 6;\n'
+                ].join ' '
+
+                test.equals m.sql(), expected
                 test.deepEqual m.params(), [7, 5]
                 test.done()
 

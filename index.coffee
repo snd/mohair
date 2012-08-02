@@ -178,9 +178,9 @@ Mohair = class
 
     _join: (prefix, table, left, right) ->
         @raw if not left?
-            "#{prefix} JOIN #{table}"
+            "#{prefix} JOIN #{@aliasedTable table}"
         else
-            "#{prefix} JOIN #{@quote table} ON #{@quote left} = #{@quote right}"
+            "#{prefix} JOIN #{@aliasedTable table} ON #{@quote left} = #{@quote right}"
 
     join: (args...) -> @_join '', args...
     leftJoin: (args...) -> @_join ' LEFT', args...
