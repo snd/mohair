@@ -238,6 +238,10 @@ SKIP 6;
 
 **Note:** use `join`, `leftJoin`, `rightJoin`, and `innerJoin` as needed.
 
+**Note:** `orderBy` can also take an array of orderings.
+an ordering is either the fieldname as a string or an object
+describing the direction like this: `{$desc: 'fieldname'}` or `{$asc: 'fieldname'}`.
+
 **Note:** `where` takes a query object. see section `Query language` below for details.
 
 #### delete

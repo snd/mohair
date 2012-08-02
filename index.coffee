@@ -153,7 +153,7 @@ Mohair = class
     select: (table, columns, f) ->
         if not f?
             f = columns
-            columns = '*'
+            columns = ['*']
         columns = columns.join(', ') if Array.isArray columns
         @command "SELECT #{columns} FROM #{@quote table}", =>
             @callOrQuery f
