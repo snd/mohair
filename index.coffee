@@ -156,7 +156,7 @@ Mohair = class
             columns = '*'
         columns = columns.join(', ') if Array.isArray columns
         @command "SELECT #{columns} FROM #{@quote table}", =>
-            @callOrQuery f if f?
+            @callOrQuery f
 
     transaction: (inner) -> @around 'BEGIN;\n', 'COMMIT;\n', inner
 
