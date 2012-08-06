@@ -162,6 +162,15 @@ module.exports =
                 test.deepEqual m.params(), []
                 test.done()
 
+            'explicit column list': (test) ->
+                m = mohair()
+
+                m.select 'project', ['name', 'id']
+
+                test.equals m.sql(), 'SELECT name, id FROM `project`;\n'
+                test.deepEqual m.params(), []
+                test.done()
+
             'explicit column list and where clause': (test) ->
                 m = mohair()
 

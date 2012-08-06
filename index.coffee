@@ -156,7 +156,8 @@ Mohair = class
     delete: (table, f) -> @command "DELETE FROM #{@quote table}", => @callOrQuery f
 
     select: (table, columns, f) ->
-        if not f?
+        noExplicitColumns = typeof columns is 'function' or not Array.isArray(columns)
+        if noExplicitColumns
             f = columns
             columns = ['*']
         columns = columns.join(', ') if Array.isArray columns
