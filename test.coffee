@@ -215,6 +215,20 @@ module.exports =
                 test.deepEqual m.params(), [7, 5]
                 test.done()
 
+        'groupBy':
+
+            'one string': (test) ->
+                m = mohair()
+                m.groupBy 'project.created_on'
+                test.equals m.sql(), ' GROUP BY `project`.`created_on`'
+                test.done()
+
+            'three strings': (test) ->
+                test.done()
+
+            'array of strings': (test) ->
+                test.done()
+
         'orderBy':
 
             'one string': (test) ->
