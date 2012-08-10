@@ -180,6 +180,35 @@ module.exports =
                 test.deepEqual m.params(), [true]
                 test.done()
 
+            'string as column list and where clause': (test) ->
+                m = mohair()
+
+                m.select 'project', 'name, id', {hidden: true}
+
+                test.equals m.sql(), 'SELECT name, id FROM `project` WHERE `hidden` = ?;\n'
+                test.deepEqual m.params(), [true]
+                test.done()
+
+            'explicit column list and function': (test) ->
+                m = mohair()
+
+                m.select 'project', ['name', 'id'], ->
+                    m.groupBy 'project.id'
+
+                test.equals m.sql(), 'SELECT name, id FROM `project` GROUP BY `project`.`id`;\n'
+                test.deepEqual m.params(), []
+                test.done()
+
+            'string as column list and function': (test) ->
+                m = mohair()
+
+                m.select 'project', 'name, id', ->
+                    m.groupBy 'project.id'
+
+                test.equals m.sql(), 'SELECT name, id FROM `project` GROUP BY `project`.`id`;\n'
+                test.deepEqual m.params(), []
+                test.done()
+
             'select as': (test) ->
                 m = mohair()
 
