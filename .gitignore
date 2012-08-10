@@ -5,3 +5,4 @@ v2-test.coffee
 v2-mockup.coffee
 where.coffee
 mysql.coffee
+shared.coffee
