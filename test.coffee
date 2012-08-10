@@ -224,9 +224,17 @@ module.exports =
                 test.done()
 
             'three strings': (test) ->
+                m = mohair()
+                m.groupBy 'project.created_on', 'user.id', 'user.age'
+                expected = ' GROUP BY `project`.`created_on`, `user`,`id`, `user`.`age`'
+                test.equals m.sql(), expected
                 test.done()
 
             'array of strings': (test) ->
+                m = mohair()
+                m.groupBy ['project.created_on', 'user.id', 'user.age']
+                expected = ' GROUP BY `project`.`created_on`, `user`,`id`, `user`.`age`'
+                test.equals m.sql(), expected
                 test.done()
 
         'orderBy':
