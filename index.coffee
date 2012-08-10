@@ -188,7 +188,9 @@ Mohair = class
     rightJoin: (args...) -> @_join ' RIGHT', args...
     innerJoin: (args...) -> @_join ' INNER', args...
 
-    groupBy: (column) -> @raw " GROUP BY #{@quote column}"
+    groupBy: (args...) ->
+        columns = if Array.isArray args[0] then args[0] else args
+        @raw " GROUP BY #{columns.map(@quote).join(', ')}"
 
     orderBy: (xs) ->
         xs = [xs] if not Array.isArray xs
