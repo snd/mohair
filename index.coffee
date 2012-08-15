@@ -222,7 +222,7 @@ Mohair = class
 
             @raw @quote(key)
 
-            isTest = typeof value is 'object'
+            isTest = typeof value is 'object' and not (value is null)
             test = @_tests[if isTest then Object.keys(value)[0] else '$eq']
             test if isTest then values(value)[0] else value
 

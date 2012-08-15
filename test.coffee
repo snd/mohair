@@ -330,6 +330,18 @@ module.exports =
                 test.deepEqual m.params(), [6, true]
                 test.done()
 
+            'null': (test) ->
+                m = mohair()
+
+                m.query
+                    'project.id': 6
+                    hidden: true
+                    name: null
+
+                test.equals m.sql(), "`project`.`id` = ? AND `hidden` = ? AND `name` = ?"
+                test.deepEqual m.params(), [6, true, null]
+                test.done()
+
             '$or': (test) ->
                 m = mohair()
 
