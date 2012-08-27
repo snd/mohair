@@ -207,11 +207,11 @@ Mohair = class
 
     limit: (count) ->
         @raw " LIMIT "
-        @callOrBind parseInt count
+        @callOrBind count
 
     offset: (count) ->
         @raw " OFFSET "
-        @callOrBind parseInt count
+        @callOrBind count
 
     # Query
     # =====
