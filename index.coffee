@@ -209,8 +209,8 @@ Mohair = class
         @raw " LIMIT "
         @callOrBind count
 
-    skip: (count) ->
-        @raw " SKIP "
+    offset: (count) ->
+        @raw " OFFSET "
         @callOrBind count
 
     # Query
