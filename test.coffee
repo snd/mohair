@@ -228,7 +228,7 @@ module.exports =
                     m.groupBy 'project.id'
                     m.orderBy 'project.created_on'
                     m.limit 5
-                    m.offset -> m.raw '6'
+                    m.offset 6
 
                 expected = [
                     'SELECT count(task.id) AS taskCount, project.*'
@@ -237,11 +237,11 @@ module.exports =
                     'LEFT JOIN `task` ON `project`.`id` = `task`.`project_id`'
                     'LEFT JOIN `task` AS `other_task` ON `project`.`id` = `task`.`project_id`'
                     'GROUP BY `project`.`id` ORDER BY `project`.`created_on`'
-                    'LIMIT ? OFFSET 6;\n'
+                    'LIMIT ? OFFSET ?;\n'
                 ].join ' '
 
                 test.equals m.sql(), expected
-                test.deepEqual m.params(), [7, 5]
+                test.deepEqual m.params(), [7, 5, 6]
                 test.done()
 
         'groupBy':
@@ -522,10 +522,10 @@ module.exports =
                 m.groupBy 'project.id'
                 m.orderBy 'project.created_on'
                 m.limit 5
-                m.offset -> m.raw '6'
+                m.offset 6
 
-            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM "project" WHERE ("id" = $1 OR "foo" = $2) LEFT JOIN "task" ON "project"."id" = "task"."project_id" GROUP BY "project"."id" ORDER BY "project"."created_on" LIMIT $3 OFFSET 6;\n'
-            test.deepEqual m.params(), [7, 'id', 5]
+            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM "project" WHERE ("id" = $1 OR "foo" = $2) LEFT JOIN "task" ON "project"."id" = "task"."project_id" GROUP BY "project"."id" ORDER BY "project"."created_on" LIMIT $3 OFFSET $4;\n'
+            test.deepEqual m.params(), [7, 'id', 5, 6]
             test.done()
 
         'upsert': (test) ->
