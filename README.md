@@ -63,8 +63,8 @@ query.params()  # [3]
 ```coffeescript
 query = user.select()
 
-query.sql()       # 'SELECT * FROM user'
-query.params()    # []
+query.sql()     # 'SELECT * FROM user'
+query.params()  # []
 ```
 
 you can omit `select()` if you want to select `*`. select is the default action.
