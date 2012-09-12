@@ -83,8 +83,8 @@ query.params()  # []
 ```coffeescript
 query = user.where(id: 3).where('name = ?', 'foo').select()
 
-query.sql()   # 'SELECT * FROM user WHERE id = ? AND name = ?'
-query.params()    # [3, 'foo']
+query.sql()     # 'SELECT * FROM user WHERE id = ? AND name = ?'
+query.params()  # [3, 'foo']
 ```
 
 multiple calls to `where` are anded together.
