@@ -153,6 +153,6 @@ deleteUser.sql()       # 'DELETE FROM user WHERE is_visible = ? AND name = ?'
 deleteUser.params()    # [true, 'foo']
 ```
 
-all query methods can be chained at will!
+all methods can be chained at will!
 
 #### license: MIT
