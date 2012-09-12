@@ -67,7 +67,7 @@ query.sql()       # 'SELECT * FROM user'
 query.params()    # []
 ```
 
-you can omit `select()` if you want to select `*` since select is the default action.
+you can omit `select()` if you want to select `*`. select is the default action.
 
 ##### select specific fields
 
