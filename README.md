@@ -133,22 +133,24 @@ query.params()
 #### immutability
 
 mohair objects are immutable.
+
 every method call returns a new object.
+
 no method call ever changes the state of the object it is called on.
 
 this means you can do stuff like this:
 
 ```coffeescript
-visible = mohair.table('user').where(is_visible: true)
+visibleUsers = mohair.table('user').where(is_visible: true)
 
-updateQuery = visible.update({name: 'i am visible'}).where(id: 3)
-updateQuery.sql()       # 'UPDATE user SET name = ? WHERE is_visible = ? AND id = ?'
-updateQuery.params()    # ['i am visible', true, 3]
+updateUser = visibleUsers.update({name: 'i am visible'}).where(id: 3)
+updateUser.sql()       # 'UPDATE user SET name = ? WHERE is_visible = ? AND id = ?'
+updateUser.params()    # ['i am visible', true, 3]
 
-deleteQuery = visible.where({name: 'foo'}).delete()
+deleteUser = visibleUsers.where({name: 'foo'}).delete()
 
-deleteQuery.sql()       # 'DELETE FROM user WHERE is_visible = ? AND name = ?'
-deleteQuery.params()    # [true, 'foo']
+deleteUser.sql()       # 'DELETE FROM user WHERE is_visible = ? AND name = ?'
+deleteUser.params()    # [true, 'foo']
 ```
 
 all query methods can be chained at will!
