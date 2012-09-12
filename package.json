@@ -1,13 +1,15 @@
 {
     "name": "mohair",
-    "description": "sql query builder",
+    "description": "sql builder",
     "author": "Maximilian Krüger <kruemaxi@googlemail.com> (http://github.com/snd)",
-    "version": "0.7.6",
+    "version": "0.8.0",
     "repository": {
         "type": "git",
         "url": "git://github.com/snd/mohair.git"
     },
-    "dependencies": {},
+    "dependencies": {
+        "criterion": "0.1.0"
+    },
     "devDependencies": {
         "nodeunit": "*"
     }

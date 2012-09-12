@@ -1,543 +1,224 @@
 mohair = require './index'
 
 module.exports =
-    'mysql':
 
-        'raw':
+    'throw on':
 
-            'without bindings': (test) ->
-                string = 'SELECT * FROM `project`;'
+        'insert without table': (test) ->
+            q = mohair.insert {name: 'foo', email: 'foo@example.com'}
+            test.throws -> q.sql()
 
-                m = mohair()
-                m.raw string
+            test.done()
 
-                test.equals m.sql(), string
-                test.done()
-
-            'with bindings': (test) ->
-                string = 'SELECT * FROM `project` WHERE `id` = ? AND `owner_id` = ?;'
-
-                m = mohair()
-                m.raw string, 7, 4
-
-                test.equals m.sql(), string
-                test.deepEqual m.params(), [7, 4]
-                test.done()
-
-            'twice': (test) ->
-                m = mohair()
-                m.raw 'SELECT * FROM `project` WHERE `id` = ?;', 7
-                m.raw 'SELECT * FROM `project` WHERE `id` = ?;', 4
-
-                test.equals m.sql(), 'SELECT * FROM `project` WHERE `id` = ?;SELECT * FROM `project` WHERE `id` = ?;'
-                test.deepEqual m.params(), [7, 4]
-                test.done()
-
-        'insert':
-
-            'empty': (test) ->
-                m = mohair()
-                m.insert 'project', []
-
-                test.equals m.sql(), 'INSERT INTO `project` () VALUES ();\n'
-                test.deepEqual m.params(), []
-                test.done()
-
-            'bindings': (test) ->
-                m = mohair()
-                m.insert 'project',
-                    name: 'Amazing Project'
-                    owner_id: 5
-                    hidden: false
-
-                test.equals m.sql(), 'INSERT INTO `project` (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?);\n'
-                test.deepEqual m.params(), ['Amazing Project', 5, false]
-                test.done()
-
-            'bindings and raw': (test) ->
-                m = mohair()
-                m.insert 'project',
-                    name: 'Another Project'
-                    created_on: -> m.raw 'NOW()'
-
-                test.equals m.sql(), 'INSERT INTO `project` (`name`, `created_on`) VALUES (?, NOW());\n'
-                test.deepEqual m.params(), ['Another Project']
-                test.done()
-
-            'multiple': (test) ->
-                m = mohair()
-                m.insert 'project', [
-                    {
-                        name: 'First Project'
-                        created_on: -> m.raw 'NOW()'
-                    }
-                    {
-                        name: 'Second Project'
-                        created_on: '1988.09.11'
-                    }
+        'create multiple records without matching keys': (test) ->
+            test.throws ->
+                mohair.table('user').insert [
+                    {name: 'foo', email: 'foo@example.com'}
+                    {name: 'bar'}
                 ]
 
-                test.equals m.sql(), 'INSERT INTO `project` (`name`, `created_on`) VALUES (?, NOW()), (?, ?);\n'
-                test.deepEqual m.params(), ['First Project', 'Second Project', '1988.09.11']
-                test.done()
+            test.throws ->
+                mohair.table('user').insert [
+                    {name: 'foo', email: 'foo@example.com'}
+                    {name: 'bar', id: 9}
+                ]
 
-            'with suffix': (test) ->
-                m = mohair()
-                m.insert 'project', {
-                    name: 'First Project'
-                    created_on: -> m.raw 'NOW()'
-                }, -> m.raw ' RETURN `id`'
-
-                test.equals m.sql(), 'INSERT INTO `project` (`name`, `created_on`) VALUES (?, NOW()) RETURN `id`;\n'
-                test.deepEqual m.params(), ['First Project']
-                test.done()
-
-        'update':
-
-            'bindings': (test) ->
-                changes =
-                    name: 'Even more amazing project'
-                    hidden: true
-
-                m = mohair()
-                m.update 'project', changes, {id: 7}
-
-                test.equals m.sql(), 'UPDATE `project` SET `name` = ?, `hidden` = ? WHERE `id` = ?;\n'
-                test.deepEqual m.params(), ['Even more amazing project', true, 7]
-                test.done()
-
-            'bindings and raw': (test) ->
-                m = mohair()
-
-                changes =
-                    name: 'Even more amazing project'
-                    updated_on: -> m.raw 'NOW()'
-
-                m.update 'project', changes, {id: 7}
-
-                test.equals m.sql(), 'UPDATE `project` SET `name` = ?, `updated_on` = NOW() WHERE `id` = ?;\n'
-                test.deepEqual m.params(), ['Even more amazing project', 7]
-                test.done()
-
-            'without condition': (test) ->
-                changes =
-                    name: 'Even more amazing project'
-                    hidden: true
-
-                m = mohair()
-                m.update 'project', changes
-
-                test.equals m.sql(), 'UPDATE `project` SET `name` = ?, `hidden` = ?;\n'
-                test.deepEqual m.params(), ['Even more amazing project', true]
-                test.done()
-
-        'delete': (test) ->
-            m = mohair()
-
-            m.delete 'project', {id: 7, hidden: true}
-
-            test.equals m.sql(), 'DELETE FROM `project` WHERE `id` = ? AND `hidden` = ?;\n'
-            test.deepEqual m.params(), [7, true]
             test.done()
 
-        'transaction': (test) ->
-            m = mohair()
+    'insert':
 
-            m.transaction ->
-                m.delete 'project', {id: 7}
-                m.update 'project', {name: 'New name'}, {id: 8}
+        'a record': (test) ->
+            q = mohair.table('user').insert {name: 'foo', user_id: 5}
 
-            test.equals m.sql(), 'BEGIN;\nDELETE FROM `project` WHERE `id` = ?;\nUPDATE `project` SET `name` = ? WHERE `id` = ?;\nCOMMIT;\n'
-            test.deepEqual m.params(), [7, 'New name', 8]
+            test.equal q.sql(), 'INSERT INTO user(name, user_id) VALUES (?, ?)'
+            test.deepEqual q.params(), ['foo', 5]
+
             test.done()
 
-        'select':
+        'multiple records': (test) ->
+            q = mohair.table('user').insert [
+                {name: 'foo', email: 'foo@example.com'}
+                {name: 'bar', email: 'bar@example.com'}
+                {name: 'baz', email: 'baz@example.com'}
+            ]
+
+            test.equal q.sql(),
+                'INSERT INTO user(name, email) VALUES (?, ?), (?, ?), (?, ?)'
+            test.deepEqual q.params(),
+                ['foo', 'foo@example.com', 'bar', 'bar@example.com', 'baz', 'baz@example.com']
 
-            'implicit star': (test) ->
-                m = mohair()
-
-                m.select 'project'
-
-                test.equals m.sql(), 'SELECT * FROM `project`;\n'
-                test.deepEqual m.params(), []
-                test.done()
-
-            'explicit column list': (test) ->
-                m = mohair()
-
-                m.select 'project', ['name', 'id']
-
-                test.equals m.sql(), 'SELECT name, id FROM `project`;\n'
-                test.deepEqual m.params(), []
-                test.done()
-
-            'explicit column list and where clause': (test) ->
-                m = mohair()
-
-                m.select 'project', ['name', 'id'], {hidden: true}
-
-                test.equals m.sql(), 'SELECT name, id FROM `project` WHERE `hidden` = ?;\n'
-                test.deepEqual m.params(), [true]
-                test.done()
-
-            'string as column list and where clause': (test) ->
-                m = mohair()
-
-                m.select 'project', 'name, id', {hidden: true}
-
-                test.equals m.sql(), 'SELECT name, id FROM `project` WHERE `hidden` = ?;\n'
-                test.deepEqual m.params(), [true]
-                test.done()
-
-            'explicit column list and function': (test) ->
-                m = mohair()
-
-                m.select 'project', ['name', 'id'], ->
-                    m.groupBy 'project.id'
-
-                test.equals m.sql(), 'SELECT name, id FROM `project` GROUP BY `project`.`id`;\n'
-                test.deepEqual m.params(), []
-                test.done()
-
-            'string as column list and function': (test) ->
-                m = mohair()
-
-                m.select 'project', 'name, id', ->
-                    m.groupBy 'project.id'
-
-                test.equals m.sql(), 'SELECT name, id FROM `project` GROUP BY `project`.`id`;\n'
-                test.deepEqual m.params(), []
-                test.done()
-
-            'select as': (test) ->
-                m = mohair()
-
-                m.select {project: 'foo'}, ['name', 'id'], {hidden: true}
-
-                test.equals m.sql(), 'SELECT name, id FROM `project` AS `foo` WHERE `hidden` = ?;\n'
-                test.deepEqual m.params(), [true]
-                test.done()
-
-            'join, groupBy and orderBy': (test) ->
-                m = mohair()
-
-                m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
-                    m.where {id: 7}
-                    m.leftJoin 'task', 'project.id' , 'task.project_id'
-                    m.leftJoin {task: 'other_task'}, 'project.id' , 'task.project_id'
-                    m.groupBy 'project.id'
-                    m.orderBy 'project.created_on'
-                    m.limit 5
-                    m.offset 6
-
-                expected = [
-                    'SELECT count(task.id) AS taskCount, project.*'
-                    'FROM `project`'
-                    'WHERE `id` = ?'
-                    'LEFT JOIN `task` ON `project`.`id` = `task`.`project_id`'
-                    'LEFT JOIN `task` AS `other_task` ON `project`.`id` = `task`.`project_id`'
-                    'GROUP BY `project`.`id` ORDER BY `project`.`created_on`'
-                    'LIMIT ? OFFSET ?;\n'
-                ].join ' '
-
-                test.equals m.sql(), expected
-                test.deepEqual m.params(), [7, 5, 6]
-                test.done()
-
-        'groupBy':
-
-            'one string': (test) ->
-                m = mohair()
-                m.groupBy 'project.created_on'
-                test.equals m.sql(), ' GROUP BY `project`.`created_on`'
-                test.done()
-
-            'three strings': (test) ->
-                m = mohair()
-                m.groupBy 'project.created_on', 'user.id', 'user.age'
-                expected = ' GROUP BY `project`.`created_on`, `user`.`id`, `user`.`age`'
-                test.equals m.sql(), expected
-                test.done()
-
-            'array of strings': (test) ->
-                m = mohair()
-                m.groupBy ['project.created_on', 'user.id', 'user.age']
-                expected = ' GROUP BY `project`.`created_on`, `user`.`id`, `user`.`age`'
-                test.equals m.sql(), expected
-                test.done()
-
-        'orderBy':
-
-            'one string': (test) ->
-                m = mohair()
-                m.orderBy 'foo'
-                test.equals m.sql(), ' ORDER BY `foo`'
-                test.done()
-
-            'one asc': (test) ->
-                m = mohair()
-                m.orderBy {$asc: 'foo'}
-                test.equals m.sql(), ' ORDER BY `foo` ASC'
-                test.done()
-
-            'one desc': (test) ->
-                m = mohair()
-                m.orderBy {$desc: 'foo'}
-                test.equals m.sql(), ' ORDER BY `foo` DESC'
-                test.done()
-
-            'one invalid': (test) ->
-                m = mohair()
-                test.throws ->
-                    m.orderBy {foo: 'foo'}
-                test.done()
-
-            'two strings': (test) ->
-                m = mohair()
-                m.orderBy ['foo', 'bar']
-                test.equals m.sql(), ' ORDER BY `foo`, `bar`'
-                test.done()
-
-            'string and asc': (test) ->
-                m = mohair()
-                m.orderBy ['foo', {$asc: 'bar'}]
-                test.equals m.sql(), ' ORDER BY `foo`, `bar` ASC'
-                test.done()
-
-            'asc and desc': (test) ->
-                m = mohair()
-                m.orderBy [{$asc: 'foo'}, {$desc: 'bar'}]
-                test.equals m.sql(), ' ORDER BY `foo` ASC, `bar` DESC'
-                test.done()
-
-            'one of two invalid': (test) ->
-                m = mohair()
-                test.throws ->
-                    m.orderBy [{foo: 'foo'}, {$asc: 'bar'}]
-                test.done()
-
-        'query':
-
-            'toplevel': (test) ->
-                m = mohair()
-
-                m.query
-                    'project.id': 6
-                    hidden: true
-                    name: -> m.quoted 'Another Project'
-
-                test.equals m.sql(), "`project`.`id` = ? AND `hidden` = ? AND `name` = 'Another Project'"
-                test.deepEqual m.params(), [6, true]
-                test.done()
-
-            'null': (test) ->
-                m = mohair()
-
-                m.query
-                    'project.id': 6
-                    hidden: true
-                    name: null
-
-                test.equals m.sql(), "`project`.`id` = ? AND `hidden` = ? AND `name` = ?"
-                test.deepEqual m.params(), [6, true, null]
-                test.done()
-
-            '$or': (test) ->
-                m = mohair()
-
-                m.query
-                    $or: [
-                        {'project.id': 6}
-                        {hidden: true}
-                        {name: -> m.quoted 'Another Project'}
-                    ]
-
-                test.equals m.sql(), "(`project`.`id` = ? OR `hidden` = ? OR `name` = 'Another Project')"
-                test.deepEqual m.params(), [6, true]
-                test.done()
-
-            'or and and': (test) ->
-                m = mohair()
-
-                m.query
-                    'project.id': 6
-                    $or: [
-                        {hidden: true}
-                        {$and: [
-                            {name: -> m.quoted 'Another Project'}
-                            {owner_id: 8}
-                        ]}
-                    ]
-
-                test.equals m.sql(), "`project`.`id` = ? AND (`hidden` = ? OR `name` = 'Another Project' AND `owner_id` = ?)"
-                test.deepEqual m.params(), [6, true, 8]
-                test.done()
-
-            'comparison operators': (test) ->
-                m = mohair()
-
-                m.query
-                    'project.id': {$lt: 6}
-                    $or: [
-                        {hidden: true}
-                        {$and: [
-                            {name: {$ne: -> m.quoted 'Another Project'}}
-                            {'owner.id': {$gte: 8}}
-                        ]}
-                    ]
-
-                test.equals m.sql(), "`project`.`id` < ? AND (`hidden` = ? OR `name` != 'Another Project' AND `owner`.`id` >= ?)"
-                test.deepEqual m.params(), [6, true, 8]
-                test.done()
-
-            'nested query': (test) ->
-                m = mohair()
-
-                m.query
-                    id: 7
-                    $or: [
-                        {'owner.id': 10}
-                        $and: [
-                            {cost: {$gt: 500}}
-                            {cost: {$lt: 1000}}
-                        ]
-                    ]
-
-                test.equals m.sql(), "`id` = ? AND (`owner`.`id` = ? OR `cost` > ? AND `cost` < ?)"
-                test.deepEqual m.params(), [7, 10, 500, 1000]
-                test.done()
-
-            '$in': (test) ->
-                m = mohair()
-
-                m.query
-                    id: {$in: [3, 5, 8, 9]}
-                    'owner.id': {$in: [10]}
-                    name: {$in: ['Ann', 'Rick']}
-
-                test.equals m.sql(), '`id` IN (?, ?, ?, ?) AND `owner`.`id` IN (?) AND `name` IN (?, ?)'
-                test.deepEqual m.params(), [3, 5, 8, 9, 10, 'Ann', 'Rick']
-                test.done()
-
-            '$not': (test) ->
-                m = mohair()
-
-                m.query
-                    $not:
-                        id: 9
-                        name: 'Ann'
-
-                test.equals m.sql(), 'NOT (`id` = ? AND `name` = ?)'
-                test.deepEqual m.params(), [9, 'Ann']
-                test.done()
-
-            '$not and $or': (test) ->
-                m = mohair()
-
-                m.query
-                    $or: [
-                        {name: 'Ann'}
-                        {$not: {
-                            id: 9
-                            name: 'Rick'
-                        }}
-                    ]
-
-                test.equals m.sql(), '(`name` = ? OR NOT (`id` = ? AND `name` = ?))'
-                test.deepEqual m.params(), ['Ann', 9, 'Rick']
-                test.done()
-
-            '$nor': (test) ->
-                m = mohair()
-
-                m.query
-                    $nor: [
-                        {name: 'Ann'}
-                        {
-                            id: 9
-                            name: 'Rick'
-                        }
-                    ]
-
-                test.equals m.sql(), 'NOT (`name` = ? OR `id` = ? AND `name` = ?)'
-                test.deepEqual m.params(), ['Ann', 9, 'Rick']
-                test.done()
-
-            '$nin': (test) ->
-                m = mohair()
-
-                m.query
-                    id: {$nin: [3, 5, 8, 9]}
-                    'owner.id': {$nin: [10]}
-                    name: {$nin: ['Ann', 'Rick']}
-
-                test.equals m.sql(), '`id` NOT IN (?, ?, ?, ?) AND `owner`.`id` NOT IN (?) AND `name` NOT IN (?, ?)'
-                test.deepEqual m.params(), [3, 5, 8, 9, 10, 'Ann', 'Rick']
-                test.done()
-
-            'string as value in query is not interpreted as test': (test) ->
-                m = mohair()
-
-                m.query
-                    $or: [
-                        {id: 'foo'}
-                        {foo: 'id'}
-                    ]
-
-                test.equals m.sql(), '(`id` = ? OR `foo` = ?)'
-                test.deepEqual m.params(), ['foo', 'id']
-                test.done()
-
-            'invalid $or query throws': (test) ->
-                m = mohair()
-
-                test.throws ->
-
-                    m.query
-                        $or:
-                            id: 'foo'
-                            foo: 'id'
-
-                test.done()
-
-        'upsert': (test) ->
-            m = mohair()
-            m.upsert 'project', {id: 5, name: 'Amazing Project'},
-                owner_id: -> m.raw 'LAST_INSERT_ID()'
-                hidden: false
-
-            test.equals m.sql(), 'INSERT INTO `project` (`id`, `name`, `owner_id`, `hidden`) VALUES (?, ?, LAST_INSERT_ID(), ?) ON DUPLICATE KEY UPDATE `id` = ?, `name` = ?, `owner_id` = LAST_INSERT_ID(), `hidden` = ?;\n'
-            test.deepEqual m.params(), [5, 'Amazing Project', false, 5, 'Amazing Project', false]
             test.done()
 
-    'postgres':
+    'update':
 
-        'complex query': (test) ->
+        'without criteria': (test) ->
+            q = mohair.table('user').update {name: 'bar', email: 'bar@example.com'}
 
-            m = mohair.postgres()
+            test.equal q.sql(), 'UPDATE user SET name = ?, email = ?'
+            test.deepEqual q.params(), ['bar', 'bar@example.com']
 
-            m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
-                m.where {$or: [{id: 7}, {foo: 'id'}]}
-                m.leftJoin 'task', 'project.id' , 'task.project_id'
-                m.groupBy 'project.id'
-                m.orderBy 'project.created_on'
-                m.limit 5
-                m.offset 6
-
-            test.equals m.sql(), 'SELECT count(task.id) AS taskCount, project.* FROM "project" WHERE ("id" = $1 OR "foo" = $2) LEFT JOIN "task" ON "project"."id" = "task"."project_id" GROUP BY "project"."id" ORDER BY "project"."created_on" LIMIT $3 OFFSET $4;\n'
-            test.deepEqual m.params(), [7, 'id', 5, 6]
             test.done()
 
-        'upsert': (test) ->
+        'with criteria': (test) ->
+            q = mohair.table('user')
+                .where(id: 3, x: 5)
+                .update {name: 'bar', email: 'bar@example.com'}
 
-            m = mohair.postgres()
+            test.equal q.sql(), 'UPDATE user SET name = ?, email = ? WHERE id = ? AND x = ?'
+            test.deepEqual q.params(), ['bar', 'bar@example.com', 3, 5]
 
-            m.upsert 'project', {id: 5, name: 'Amazing Project'},
-                owner_id: -> m.raw 'LAST_INSERT_ID()'
-                hidden: false
-
-            expected = 'UPDATE "project" SET "id" = $1, "name" = $2, "owner_id" = LAST_INSERT_ID(), "hidden" = $3 WHERE "id" = $4 AND "name" = $5;\nINSERT INTO "project" ("id", "name", "owner_id", "hidden") SELECT $6, $7, LAST_INSERT_ID(), $8 WHERE NOT EXISTS (SELECT 1 FROM "project" WHERE "id" = $9 AND "name" = $10);\n'
-
-            test.equals m.sql(), expected
-            test.deepEqual m.params(), [5, 'Amazing Project', false, 5, 'Amazing Project', 5, 'Amazing Project', false, 5, 'Amazing Project']
             test.done()
+
+    'delete':
+
+        'without criteria': (test) ->
+            q = mohair.table('user').delete()
+
+            test.equal q.sql(), 'DELETE FROM user'
+            test.deepEqual q.params(), []
+
+            test.done()
+
+        'with criteria': (test) ->
+            q = mohair.table('user')
+                .delete()
+                .where('x BETWEEN ? AND ?', 50, 55)
+                .where($or: {x: 10, y: 6})
+
+            test.equal q.sql(), 'DELETE FROM user WHERE x BETWEEN ? AND ? AND (x = ?) OR (y = ?)'
+            test.deepEqual q.params(), [50, 55, 10, 6]
+
+            test.done()
+
+    'select':
+
+        'default is select *': (test) ->
+            q = mohair.table('user')
+
+            test.equal q.sql(), 'SELECT * FROM user'
+            test.deepEqual q.params(), []
+
+            test.done()
+
+        'all fields': (test) ->
+            q = mohair.table('user').select()
+
+            test.equal q.sql(), 'SELECT * FROM user'
+            test.deepEqual q.params(), []
+
+            test.done()
+
+        'specific fields': (test) ->
+            q = mohair.table('user').select('name, timestamp AS created_at')
+
+            test.equal q.sql(), 'SELECT name, timestamp AS created_at FROM user'
+            test.deepEqual q.params(), []
+
+            test.done()
+
+        'with criteria': (test) ->
+            q = mohair.table('user').where(id: 3).select()
+
+            test.equal q.sql(), 'SELECT * FROM user WHERE id = ?'
+            test.deepEqual q.params(), [3]
+
+            test.done()
+
+        'criteria are anded together': (test) ->
+            q = mohair.table('user').where(id: 3).where('name = ?', 'foo').select()
+
+            test.equal q.sql(), 'SELECT * FROM user WHERE id = ? AND name = ?'
+            test.deepEqual q.params(), [3, 'foo']
+
+            test.done()
+
+        'order': (test) ->
+            q = mohair.table('user').order('created DESC, name ASC')
+
+            test.equal q.sql(), 'SELECT * FROM user ORDER BY created DESC, name ASC'
+            test.deepEqual q.params(), []
+
+            test.done()
+
+        'limit': (test) ->
+            q = mohair.table('user').limit(10)
+
+            test.equal q.sql(), 'SELECT * FROM user LIMIT ?'
+            test.deepEqual q.params(), [10]
+
+            test.done()
+
+        'offset': (test) ->
+            q = mohair.table('user').offset(5)
+
+            test.equal q.sql(), 'SELECT * FROM user OFFSET ?'
+            test.deepEqual q.params(), [5]
+
+            test.done()
+
+        'join': (test) ->
+            q = mohair.table('user')
+                .join('JOIN project ON user.id = project.user_id')
+
+            test.equal q.sql(), 'SELECT * FROM user JOIN project ON user.id = project.user_id'
+            test.deepEqual q.params(), []
+
+            test.done()
+
+        'group': (test) ->
+            q = mohair.table('user')
+                .select('user.*, count(project.id) AS project_count')
+                .join('JOIN project ON user.id = project.user_id')
+                .group('user.id')
+
+            test.equal q.sql(), 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id GROUP BY user.id'
+            test.deepEqual q.params(), []
+
+            test.done()
+
+        'everything together': (test) ->
+            q = mohair.table('user')
+                .select('user.*, count(project.id) AS project_count')
+                .where(id: 3)
+                .where('name = ?', 'foo')
+                .join('JOIN project ON user.id = project.user_id')
+                .group('user.id')
+                .order('created DESC, name ASC')
+                .limit(10)
+                .offset(20)
+
+            test.equal q.sql(), 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id WHERE id = ? AND name = ? GROUP BY user.id ORDER BY created DESC, name ASC LIMIT ? OFFSET ?'
+            test.deepEqual q.params(), [3, 'foo', 10, 20]
+
+            test.done()
+
+    'actions overwrite previous actions': (test) ->
+        chain = mohair.table('user')
+            .where(id: 3)
+            .select('name')
+
+        query = chain.insert(name: 'foo').table('project')
+
+        test.equal chain.sql(), 'SELECT name FROM user WHERE id = ?'
+        test.deepEqual chain.params(), [3]
+
+        test.equal query.sql(), 'INSERT INTO project(name) VALUES (?)'
+        test.deepEqual query.params(), ['foo']
+
+        test.done()
+
+    'immutability': (test) ->
+        visible = mohair.table('project').where(is_visible: true)
+
+        updateQuery = visible.update({name: 'i am visible'}).where(id: 3)
+        test.equal updateQuery.sql(),
+            'UPDATE project SET name = ? WHERE is_visible = ? AND id = ?'
+        test.deepEqual updateQuery.params(), ['i am visible', true, 3]
+
+        deleteQuery = visible.where({name: 'foo'}).delete()
+
+        test.equal deleteQuery.sql(),
+            'DELETE FROM project WHERE is_visible = ? AND name = ?'
+        test.deepEqual deleteQuery.params(), [true, 'foo']
+
+        test.done()

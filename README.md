@@ -1,488 +1,156 @@
 # mohair
 
-sql query builder for nodejs
+sql builder
 
-*write elegant code to generate sql queries - instead of concatenating strings and pushing to endless parameter lists*
+[the readme for version 0.7.6 is still available here](https://github.com/snd/mohair/tree/7f6da92158ecbbc09fd45b03b94124f9a833a2a2)
 
-### Install
+### install
 
     npm install mohair
 
-### Use mohair with node-mysql
+### use
+
+##### use a table
 
 ```coffeescript
+mohair = require 'mohair'
 
-mysql = require 'mysql'
-
-connection = mysql.createConnection
-    user: 'mysql-username'
-    password: 'mysql-password'
-    database: 'mysql-database'
-
-connection.connect()
-
-m = require('mohair')()
-
-m.insert 'project',
-    name: 'Amazing Project'
-    owner_id: 5
-    hidden: false
-
-client.query m.sql(), m.params(), (err, result) ->
-    throw err if err?
-    console.log result
-
-client.end()
+user = mohair.table 'user'  # will be used in all the following examples
 ```
 
-### Queries
-
-#### insert a single row
+##### insert a record
 
 ```coffeescript
-m = require('mohair')()
+query = user.insert {name: 'foo', email: 'foo@example.com}
 
-m.insert 'project',
-    name: 'Amazing Project'
-    owner_id: 5
-    hidden: false
+query.sql()     # 'INSERT INTO user(name, email) VALUES (?, ?)'
+query.params()  # ['foo', 'foo@example.com']
 ```
 
-`m.sql()` returns:
-
-```sql
-INSERT INTO `project` (`name`, `owner_id`, `hidden`) VALUES (?, ?, ?);
-```
-
-`m.params()` returns:
+##### insert multiple records
 
 ```coffeescript
-['Amazing Project', 5, false]
+query = user.insert [{name: 'foo'}, {name: 'bar'}]
+
+query.sql()     # 'INSERT INTO user(name) VALUES (?), (?)'
+query.params()  # ['foo', 'bar']
 ```
 
-#### insert multiple rows at once
+all records in the argument array must have the same keys.
+
+##### update
 
 ```coffeescript
-{insert, sql, params} = require('mohair')()
+query = user.where({name: 'foo'}).update({name: 'bar'})
 
-insert 'project', [
-    {name: 'First project', hidden: true},
-    {name: 'Second project', hidden: false}
-]
+query.sql()     # 'UPDATE user SET name = ? WHERE name = ?'
+query.params()  # ['bar', 'foo']
 ```
 
-`sql()` returns:
+`where` can take any valid [criterion](https://github.com/snd/criterion).
 
-```sql
-INSERT INTO `project` (`name`, `hidden`) VALUES (?, ?), (?, ?);
-```
-
-`params()` returns:
+##### delete
 
 ```coffeescript
-['First project', true, 'Second project', false]
+user.where(id: 3).delete()
+
+query.sql()     # 'DELETE FROM user WHERE id = ?'
+query.params()  # [3]
 ```
 
-**Note:** all inserted objects must have the same keys.
-
-#### call some sql function inside the insert
+##### select
 
 ```coffeescript
-m = require('mohair')()
+query = user.select()
 
-m.insert 'project',
-    name: 'Another Project'
-    created_on: -> m.raw 'NOW()'
-    user_id: -> m.raw 'LAST_INSERT_ID()'
+query.sql()       # 'SELECT * FROM user'
+query.params()    # []
 ```
 
-`m.sql()` returns:
+you can omit `select()` if you want to select `*` since select is the default action.
 
-```sql
-INSERT INTO `project` (`name,` `created_on`, `user_id`) VALUES (?, NOW(), LAST_INSERT_ID());
-```
-
-`m.params()` returns:
+##### select specific fields
 
 ```coffeescript
-['Another Project']
+query = user.select('name, timestamp AS created_at')
+
+query.sql()     # 'SELECT name, timestamp AS created_at FROM user'
+query.params()  # []
 ```
 
-#### upsert
+##### select with criteria
 
 ```coffeescript
-m = require('mohair')()
+query = user.where(id: 3).where('name = ?', 'foo').select()
 
-m.upsert 'project', {id: 'foo'},
-    name: 'bar'
+query.sql()   # 'SELECT * FROM user WHERE id = ? AND name = ?'
+query.params()    # [3, 'foo']
 ```
 
-`m.sql()` returns:
+multiple calls to `where` are anded together.
 
-```sql
-INSERT INTO `project` (`id`, `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `id` = ?, `name` = ?;
-```
-
-`m.params()` returns:
+##### order
 
 ```coffeescript
-['foo', 'bar', 'foo', 'bar']
+query = user.order('created DESC, name ASC').select()
+
+query.sql()     # 'SELECT * FROM user ORDER BY created DESC, name ASC'
+query.params()  # []
 ```
 
-**Note:** the first argument is a seperate mapping for the key of the table.
-It isn't needed for the special mysql syntax `ON DUPLICATE KEY UPDATE` but for upserts in postgres.
-
-#### update a row
+##### limit and offset
 
 ```coffeescript
-m = require('mohair')()
+query = user.limit(20).offset(10).select()
 
-m.update 'project', {
-    name: 'Even more amazing project'
-    hidden: true
-}, {id: 7}
+query.sql()     # 'SELECT * FROM user LIMIT ? offset ?'
+query.params()  # [20, 10]
 ```
 
-**Note:** the last argument is a query object. see section `Query language` below for details.
-
-`m.sql()` returns:
-
-```sql
-UPDATE `project` SET `name` = ?, `hidden` = ? WHERE `id` = ?;
-```
-
-`m.params()` returns:
+##### join
 
 ```coffeescript
-['Even more amazing project', true, 7]
+query = user.join('JOIN project ON user.id = project.user_id')
+
+query.sql()     # 'SELECT * FROM user JOIN user ON user.id = project.user_id'
+query.params()  # []
 ```
 
-#### select everything
+##### group
 
 ```coffeescript
-m = require('mohair')()
+query = user
+    .select('user.*, count(project.id) AS project_count')
+    .join('JOIN project ON user.id = project.user_id')
+    .group('user.id')
 
-m.select 'project'
+query.sql()
+# 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id GROUP BY user.id'
+query.params()
+# []
 ```
 
-`m.sql()` returns:
+#### immutability
 
-```sql
-SELECT * FROM `project`;
-```
+mohair objects are immutable.
+every method call returns a new object.
+no method call ever changes the state of the object it is called on.
 
-`m.params()` returns:
+this means you can do stuff like this:
 
 ```coffeescript
-[]
+visible = mohair.table('user').where(is_visible: true)
+
+updateQuery = visible.update({name: 'i am visible'}).where(id: 3)
+updateQuery.sql()       # 'UPDATE user SET name = ? WHERE is_visible = ? AND id = ?'
+updateQuery.params()    # ['i am visible', true, 3]
+
+deleteQuery = visible.where({name: 'foo'}).delete()
+
+deleteQuery.sql()       # 'DELETE FROM user WHERE is_visible = ? AND name = ?'
+deleteQuery.params()    # [true, 'foo']
 ```
 
-#### select specific columns with a condition
+all query methods can be chained at will!
 
-```coffeescript
-m = require('mohair')()
-
-m.select 'project', ['name', 'id'], {hidden: true}
-```
-
-**Note:** the last argument is a query object. see section `Query language` below for details.
-
-**Note:** the second argument can also be a string.
-
-`m.sql()` returns:
-
-```sql
-SELECT name, id FROM `project` WHERE `hidden` = ?;
-```
-
-`m.params()` returns:
-
-```coffeescript
-[true]
-```
-
-#### join, groupBy and orderBy
-
-```coffeescript
-m = require('mohair')()
-
-m.select 'project', ['count(task.id) AS taskCount', 'project.*'], ->
-    m.leftJoin 'task', 'project.id' , 'task.project_id'
-    m.where {'project.visible': true}
-    m.groupBy 'project.id'
-    m.orderBy {$desc: 'project.created_on'}
-    m.limit 5
-    m.skip -> m.raw '6'
-```
-
-`m.sql()` returns:
-
-```sql
-SELECT
-    count(task.id) AS taskCount,
-    project.*
-FROM `project`
-LEFT JOIN `task` ON `project`.`id` = `task`.`project_id`
-WHERE `project`.`visible` = ?
-GROUP BY `project`.`id`
-ORDER BY `project`.`created_on` DESC
-LIMIT ?
-SKIP 6;
-```
-
-`m.params()` returns:
-
-```coffeescript
-[true, 5]
-```
-
-**Note:** use `join`, `leftJoin`, `rightJoin`, and `innerJoin` as needed.
-
-**Note:** `orderBy` can also take an array of orderings.
-an ordering is either the fieldname as a string or an object
-describing the direction like this: `{$desc: 'fieldname'}` or `{$asc: 'fieldname'}`.
-
-**Note:** `where` takes a query object. see section `Query language` below for details.
-
-#### delete
-
-```coffeescript
-m = require('mohair')()
-
-m.delete 'project', {id: 7, hidden: true}
-```
-
-`m.sql()` returns:
-
-```sql
-DELETE FROM `project` WHERE `id` = ? AND `hidden` = ?;
-```
-
-`m.params()` returns:
-
-```coffeescript
-[7, true]
-```
-
-**Note:** the last argument is a query object. see section `Query language` below for details.
-
-#### transactions
-
-```coffeescript
-m = require('mohair')()
-
-m.transaction ->
-    m.remove 'project', {id: 7}
-    m.update 'project', {name: 'New name'}, {id: 8}
-```
-
-`m.sql()` returns:
-
-```sql
-BEGIN;
-DELETE FROM `project` WHERE `id` = ?;
-UPDATE `project` SET `name` = ? WHERE `id` = ?;
-COMMIT;
-```
-
-`m.params()` returns:
-
-```coffeescript
-[7, 'New name', 8]
-```
-#### fall back to raw sql with optional parameter bindings
-
-```coffeescript
-m = require('mohair')()
-
-m.raw 'SELECT * FROM `project` WHERE `id` = ?;', 7
-```
-
-`m.sql()` returns:
-
-```sql
-SELECT * FROM `project` WHERE `id` = ?;
-```
-
-`m.params()` returns:
-
-```coffeescript
-[7]
-```
-
-### Query language
-
-inspired by the [mongo query language](http://www.mongodb.org/display/DOCS/Advanced+Queries)
-
-#### query objects
-
-sql is generated from query objects by using the keys as column names,
-binding or calling the values and interspersing 'AND':
-
-```coffeescript
-m = require('mohair')()
-
-m.query
-    id: 7
-    hidden: true
-    name: -> m.quoted 'Another project'
-```
-
-`m.sql()` returns:
-
-```sql
-`id` = ? AND `hidden` = ? AND `name` = 'Another project'
-```
-
-`m.params()` returns:
-
-```coffeescript
-[7, true]
-```
-
-#### comparison operators
-
-you can change the default comparison operator '=' as follows:
-
-```coffeescript
-m = require('mohair')()
-
-m.query
-    id: 7
-    name: {$ne: -> quoted 'Another project'}
-    owner_id: {$lt: 10}
-    category_id: {$lte: 4}
-    deadline: {$gt: -> m.raw 'NOW()'}
-    cost: {$gte: 7000}
-```
-
-`m.sql()` returns:
-
-```sql
-`id` = ? AND
-`name` != 'Another project' AND
-`owner_id` < ? AND
-`category_id` <= ? AND
-`deadline` > NOW() AND
-`cost` >= ?
-```
-
-`params()` returns:
-
-```coffeescript
-[7, 10, 4, 7000]
-```
-
-##### $in
-
-select rows where column `id` has one of the values: `3, 5, 8, 9`:
-
-```coffeescript
-m = require('mohair')()
-
-m.query
-    id: {$in: [3, 5, 8, 9]}
-```
-
-`m.sql()` returns:
-
-```sql
-`id` IN (?, ?, ?, ?)
-```
-
-`m.params()` returns:
-
-```coffeescript
-[3, 5, 8, 9]
-```
-
-##### $nin = not in
-
-##### $not
-
-the special key `$not` takes a query object and negates it:
-
-```coffeescript
-m = require('mohair')()
-
-m.query
-    $not: {id: {$in: [3, 5, 8, 9]}}
-```
-
-`m.sql()` returns:
-
-```sql
-NOT (`id` IN (?, ?, ?, ?))
-```
-
-`m.params()` returns:
-
-```coffeescript
-[3, 5, 8, 9]
-```
-
-##### $or
-
-the special key `$or` takes an array of query objects and generates a querystring
-where only one of the queries must match:
-
-```coffeescript
-m = require('mohair')()
-
-m.query
-    $or: [
-        {id: 7}
-        {name: -> quoted 'Another project'}
-        {owner_id: 10}
-    ]
-```
-
-`m.sql()` returns:
-
-```sql
-`id` = ? OR `name` = 'Another project' OR `owner_id` = ?
-```
-
-`m.params()` returns:
-
-```coffeescript
-[7, 10]
-```
-
-##### $nor
-
-shorthand for `{$not: {$or: ...}}`
-
-##### $and
-
-the special key `$and` takes an array of query objects and generates a querystring
-where all of the queries must match.
-`$and` and `$or` can be nested:
-
-```coffeescript
-m = require('mohair')()
-
-m.query
-    id: 7
-    $or: [
-        {owner_id: 10}
-        $and: [
-            {cost: {$gt: 500}}
-            {cost: {$lt: 1000}}
-        ]
-    ]
-```
-
-`m.sql()` returns:
-
-```sql
-`id` = ? AND (`owner_id` = ? OR `cost` > ? AND `cost` < ?)
-```
-
-`m.params()` returns:
-
-```coffeescript
-[7, 10, 500, 1000]
-```
-
-### License: MIT
+#### license: MIT

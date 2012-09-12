@@ -1,237 +1,168 @@
-assert = require 'assert'
+criterion = require 'criterion'
 
-mysql =
-    getPlaceholderGenerator: ->
-        -> '?'
-    quote: (string) -> string.split('.').map((part) -> "`#{part}`").join('.')
-
-    upsert: (table, keyObject, object) ->
-        throw new Error 'second argument must be an object' if not typeof keyObject is 'object'
-        throw new Error 'third argument must be an object' if not typeof object is 'object'
-        combined = {}
-        combined[k] = v for k, v of keyObject
-        combined[k] = v for k, v of object
-        keys = Object.keys combined
-        columnString = keys.map(@quote).join(', ')
-        @command "INSERT INTO #{@quote table} (#{columnString}) VALUES ", =>
-            @array values combined
-            @raw ' ON DUPLICATE KEY UPDATE '
-            @assignments combined
-
-postgres =
-    getPlaceholderGenerator: ->
-        i = 1
-        -> "$#{i++}"
-    quote: (string) -> string.split('.').map((part) -> "\"#{part}\"").join('.')
-
-    upsert: (table, keyObject, object) ->
-        throw new Error 'second argument must be an object' if not typeof keyObject is 'object'
-        throw new Error 'third argument must be an object' if not typeof object is 'object'
-        combined = {}
-        combined[k] = v for k, v of keyObject
-        combined[k] = v for k, v of object
-
-        @update table, combined, keyObject
-
-        keys = Object.keys combined
-        columnString = keys.map(@quote).join(', ')
-
-        @command "INSERT INTO #{@quote table} (#{columnString}) SELECT ", =>
-            @intersperse ', ', values(combined), @callOrBind
-            @raw " WHERE NOT EXISTS (SELECT 1 FROM #{@quote table} WHERE "
-            @query keyObject
-            @raw ")"
-
-values = (obj) -> Object.keys(obj).map (key) -> obj[key]
+values = (object) ->
+    vs = []
+    for k, v of object
+        do (k, v) -> vs.push v
+    vs
 
 Mohair = class
 
-    constructor: (@database = mysql) ->
-        @getNextPlaceholder = @database.getPlaceholderGenerator()
-        @quote = @database.quote
+    # fluent
+    # ======
 
-        @_sql = ''
-        @_params = []
+    # returns a new Mohair with `key` set to `value`
 
-        @_queryModifiers =
-            $or: (q) => @parens => @subqueryByOp 'OR', q
-            $and: (q) => @subqueryByOp 'AND', q
-            $not: (q) => @not => @query q
-            $nor: (q) => @not => @subqueryByOp 'OR', q
+    set: (key, value) ->
+        # TODO make this work like it should
+        # object = new this.prototype.Constructor
+        object = new Mohair
+        object._parent = @
+        state = {}
+        state[key] = value
+        object._state = state
+        object
 
-        @_tests =
-            $in: (x) => @before ' IN ', => @array x
-            $nin: (x) => @before ' NOT IN ', => @array x
+    # actions
+    # -------
 
-        comparisons =
-            '$eq': ' = '
-            '$ne': ' != '
-            '$lt': ' < '
-            '$lte': ' <= '
-            '$gt': ' > '
-            '$gte': ' >= '
+    insert: (data) ->
+        throw new Error 'missing data' unless data?
+        array = if Array.isArray data then data else [data]
+        throw new Error 'no records to insert' if array.length is 0
 
-        for key, operator of comparisons
-            do (key, operator) =>
-                @_tests[key] = (x) => @before operator, => @callOrBind x
+        msg = 'all records in the argument array must have the same keys.'
+        keys = Object.keys array[0]
+        array.forEach (item) ->
+            itemKeys = Object.keys item
 
-    # Core
-    # ====
+            throw new Error msg if itemKeys.length isnt keys.length
 
-    sql: -> @_sql
+            keys.forEach (key, index) ->
+                throw new Error msg unless key is itemKeys[index]
 
-    params: -> @_params
+        @set '_action',
+            verb: 'insert'
+            param: array
 
-    raw: (sql, params...) ->
-        @_sql += sql
-        @_params.push params...
+    select: (sql = '*') -> @set '_action', {verb: 'select', param: sql}
 
-    # Helpers
-    # =======
+    delete: -> @set '_action', {verb: 'delete'}
 
-    aliasedTable: (table) ->
-        if typeof table is 'string' then @quote table else
-            tableName = Object.keys(table)[0]
-            "#{@quote tableName} AS #{@quote table[tableName]}"
+    update: (updates) -> @set '_action', {verb: 'update', param: updates}
 
-    array: (xs) -> @parens => @intersperse ', ', xs, @callOrBind
+    # select modifiers
+    # ----------------
 
-    not: (inner) -> @before 'NOT ', => @parens inner
+    join: (join) -> @set '_join', join
 
-    quoted: (string) -> @raw "'#{string}'"
+    group: (group) -> @set '_group', group
 
-    intersperse: (string, obj, f) ->
-        first = true
-        for key, value of obj
-            do (key, value) =>
-                if first then first = false else @raw string
-                f value, key
+    order: (order) -> @set '_order', order
 
-    around: (start, end, inner) ->
-        @raw start
-        inner() if inner?
-        @raw end
+    limit: (limit) -> @set '_limit', limit
 
-    before: (start, inner) -> @around start, '', inner
+    offset: (offset) -> @set '_offset', offset
 
-    parens: (inner) -> @around '(', ')', inner
+    # other
+    # -----
 
-    command: (start, inner) -> @around start, ';\n', inner
+    table: (table) -> @set '_table', table
 
-    callOrQuery: (f) ->
-        return if not f?
-        if typeof f is 'function' then f() else @where f
+    where: (args...) ->
+        existingWhere = @get '_where'
+        where = criterion args...
+        @set '_where', if existingWhere? then existingWhere.and(where) else where
 
-    callOrBind: (f) =>
-        if typeof f is 'function' then f() else @raw @getNextPlaceholder(), f
+    # Not fluent
+    # ==========
 
-    # {key1} = {value1()}, {key2} = {value2()}, ...
-    assignments: (obj) ->
-        @intersperse ', ', obj, (value, column) =>
-            @before "#{@quote(column)} = ", => @callOrBind value
+    # search for a key in the parent chain
 
-    # Interface
-    # =========
+    get: (key) ->
+        return @_state[key] if @_state? and @_state[key]?
+        return null if not @_parent?
+        @_parent.get key
 
-    insert: (table, objects, suffix) ->
-        throw new Error 'second argument missing in insert' if not objects?
-        objects = if Array.isArray objects then objects else [objects]
-        return @command "INSERT INTO #{@quote table} () VALUES ()" if objects.length is 0
-        keys = Object.keys objects[0]
-        columnString = keys.map(@quote).join(', ')
-        @command "INSERT INTO #{@quote table} (#{columnString}) VALUES ", =>
-            @intersperse ', ', objects, (object, index) =>
-                assert.deepEqual keys, Object.keys(object),
-                    'objects must have the same keys'
+    _getAction: -> @get('_action') || {verb: 'select', param: '*'}
 
-                @array values object
-            suffix?()
+    sql: ->
+        action = @_getAction()
 
-    update: (table, changes, f) ->
-        @command "UPDATE #{@quote table} SET ", =>
-            @assignments changes
+        table = @get '_table'
 
-            @callOrQuery f
+        throw new Error 'no table' unless table?
 
-    delete: (table, f) -> @command "DELETE FROM #{@quote table}", => @callOrQuery f
+        switch action.verb
+            when 'insert'
+                keys = Object.keys action.param[0]
+                parts = action.param.map ->
+                    questionMarks = keys.map -> '?'
+                    "(#{questionMarks.join ', '})"
+                "INSERT INTO #{table}(#{keys.join ', '}) VALUES #{parts.join ', '}"
+            when 'select'
+                join = @get '_join'
+                where = @get '_where'
+                group = @get '_group'
+                order = @get '_order'
+                limit = @get '_limit'
+                offset = @get '_offset'
 
-    select: (table, columns, f) ->
-        hasExplicitColumns = Array.isArray(columns) or typeof columns is 'string'
-        if not hasExplicitColumns
-            f = columns
-            columns = ['*']
-        columns = columns.join(', ') if Array.isArray columns
-        @command "SELECT #{columns} FROM #{@aliasedTable table}", =>
-            @callOrQuery f
+                sql = "SELECT #{action.param} FROM #{table}"
+                sql += " #{join}" if join?
+                sql += " WHERE #{where.sql()}" if where?
+                sql += " GROUP BY #{group}" if group?
+                sql += " ORDER BY #{order}" if order?
+                sql += " LIMIT ?" if limit?
+                sql += " OFFSET ?" if offset?
 
-    transaction: (inner) -> @around 'BEGIN;\n', 'COMMIT;\n', inner
+                sql
+            when 'update'
+                keys = Object.keys action.param
+                where = @get '_where'
 
-    upsert: ->
-        if not @database.upsert?
-            throw new Error 'upsert not implemented for selected database'
-        @database.upsert.apply @, arguments
+                sql = "UPDATE #{table} SET #{keys.map((k) -> "#{k} = ?").join ', '}"
+                sql += " WHERE #{where.sql()}" if where?
+                sql
+            when 'delete'
+                where = @get '_where'
 
-    # Select inner
-    # ------------
+                sql = "DELETE FROM #{table}"
+                sql += " WHERE #{where.sql()}" if where?
+                sql
 
-    where: (f) -> @before " WHERE ", =>
-        if typeof f is 'function' then f() else @query f
+    params: ->
+        action = @_getAction()
 
-    _join: (prefix, table, left, right) ->
-        @raw if not left?
-            "#{prefix} JOIN #{@aliasedTable table}"
-        else
-            "#{prefix} JOIN #{@aliasedTable table} ON #{@quote left} = #{@quote right}"
+        switch action.verb
+            when 'insert'
+                params = []
+                action.param.forEach (x) ->
+                    for k, v of x
+                        do (k, v) -> params.push v
+                params
+            when 'select'
+                where = @get '_where'
+                limit = @get '_limit'
+                offset = @get '_offset'
 
-    join: (args...) -> @_join '', args...
-    leftJoin: (args...) -> @_join ' LEFT', args...
-    rightJoin: (args...) -> @_join ' RIGHT', args...
-    innerJoin: (args...) -> @_join ' INNER', args...
+                params = []
+                params = params.concat where.params() if where?
+                params.push limit if limit?
+                params.push offset if offset?
+                params
+            when 'update'
+                where = @get '_where'
 
-    groupBy: (args...) ->
-        columns = if Array.isArray args[0] then args[0] else args
-        @raw " GROUP BY #{columns.map(@quote).join(', ')}"
+                params = values action.param
+                params = params.concat where.params() if where?
+                params
+            when 'delete'
+                where = @get '_where'
 
-    orderBy: (xs) ->
-        xs = [xs] if not Array.isArray xs
-        @raw " ORDER BY "
-        @intersperse ', ', xs, (x) =>
-            if typeof x is 'string'
-                @raw @quote x
-            else if typeof x is 'object'
-                if x['$asc']
-                    @raw @quote(x['$asc']) + ' ASC'
-                else if x['$desc']
-                    @raw @quote(x['$desc']) + ' DESC'
-                else throw new Error "invalid order #{JSON.stringify x}"
+                params = []
+                params = params.concat where.params() if where?
+                params
 
-    limit: (count) ->
-        @raw " LIMIT "
-        @callOrBind parseInt(count, 10)
-
-    offset: (count) ->
-        @raw " OFFSET "
-        @callOrBind parseInt(count, 10)
-
-    # Query
-    # =====
-
-    query: (query) ->
-        @intersperse ' AND ', query, (value, key) =>
-            return @_queryModifiers[key] value if @_queryModifiers[key]?
-
-            @raw @quote(key)
-
-            isTest = typeof value is 'object' and not (value is null)
-            test = @_tests[if isTest then Object.keys(value)[0] else '$eq']
-            test if isTest then values(value)[0] else value
-
-    subqueryByOp: (op, list) ->
-        if not Array.isArray list
-            msg = "array expected as argument to #{op} query but #{list} given"
-            throw new Error msg
-        @intersperse " #{op} ", list, (x) => @query x
-
-module.exports = (database) -> new Mohair database
-module.exports.mysql = -> new Mohair mysql
-module.exports.postgres = -> new Mohair postgres
+module.exports = new Mohair
+module.exports.Mohair = Mohair
