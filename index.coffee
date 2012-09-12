@@ -14,9 +14,8 @@ Mohair = class
     # returns a new Mohair with `key` set to `value`
 
     set: (key, value) ->
-        # TODO make this work like it should
-        # object = new this.prototype.Constructor
-        object = new Mohair
+        constructor = this.constructor
+        object = new constructor
         object._parent = @
         state = {}
         state[key] = value
