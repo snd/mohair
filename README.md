@@ -112,7 +112,7 @@ query.params()  # [20, 10]
 ```coffeescript
 query = user.join('JOIN project ON user.id = project.user_id')
 
-query.sql()     # 'SELECT * FROM user JOIN user ON user.id = project.user_id'
+query.sql()     # 'SELECT * FROM user JOIN project ON user.id = project.user_id'
 query.params()  # []
 ```
 
