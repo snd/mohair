@@ -21,7 +21,7 @@ user = mohair.table 'user'  # will be used in all the following examples
 ##### insert a record
 
 ```coffeescript
-query = user.insert {name: 'foo', email: 'foo@example.com}
+query = user.insert {name: 'foo', email: 'foo@example.com'}
 
 query.sql()     # 'INSERT INTO user(name, email) VALUES (?, ?)'
 query.params()  # ['foo', 'foo@example.com']
