@@ -38,17 +38,6 @@ query.params()  # ['foo', 'bar']
 
 all records in the argument array must have the same keys.
 
-##### update
-
-```coffeescript
-query = user.where({name: 'foo'}).update({name: 'bar'})
-
-query.sql()     # 'UPDATE user SET name = ? WHERE name = ?'
-query.params()  # ['bar', 'foo']
-```
-
-`where` can take any valid [criterion](https://github.com/snd/criterion).
-
 ##### delete
 
 ```coffeescript
@@ -56,6 +45,17 @@ user.where(id: 3).delete()
 
 query.sql()     # 'DELETE FROM user WHERE id = ?'
 query.params()  # [3]
+```
+
+`where` can take any valid [criterion](https://github.com/snd/criterion).
+
+##### update
+
+```coffeescript
+query = user.where({name: 'foo'}).update({name: 'bar'})
+
+query.sql()     # 'UPDATE user SET name = ? WHERE name = ?'
+query.params()  # ['bar', 'foo']
 ```
 
 ##### select

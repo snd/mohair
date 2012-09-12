@@ -49,26 +49,6 @@ module.exports =
 
             test.done()
 
-    'update':
-
-        'without criteria': (test) ->
-            q = mohair.table('user').update {name: 'bar', email: 'bar@example.com'}
-
-            test.equal q.sql(), 'UPDATE user SET name = ?, email = ?'
-            test.deepEqual q.params(), ['bar', 'bar@example.com']
-
-            test.done()
-
-        'with criteria': (test) ->
-            q = mohair.table('user')
-                .where(id: 3, x: 5)
-                .update {name: 'bar', email: 'bar@example.com'}
-
-            test.equal q.sql(), 'UPDATE user SET name = ?, email = ? WHERE id = ? AND x = ?'
-            test.deepEqual q.params(), ['bar', 'bar@example.com', 3, 5]
-
-            test.done()
-
     'delete':
 
         'without criteria': (test) ->
@@ -87,6 +67,26 @@ module.exports =
 
             test.equal q.sql(), 'DELETE FROM user WHERE x BETWEEN ? AND ? AND (x = ?) OR (y = ?)'
             test.deepEqual q.params(), [50, 55, 10, 6]
+
+            test.done()
+
+    'update':
+
+        'without criteria': (test) ->
+            q = mohair.table('user').update {name: 'bar', email: 'bar@example.com'}
+
+            test.equal q.sql(), 'UPDATE user SET name = ?, email = ?'
+            test.deepEqual q.params(), ['bar', 'bar@example.com']
+
+            test.done()
+
+        'with criteria': (test) ->
+            q = mohair.table('user')
+                .where(id: 3, x: 5)
+                .update {name: 'bar', email: 'bar@example.com'}
+
+            test.equal q.sql(), 'UPDATE user SET name = ?, email = ? WHERE id = ? AND x = ?'
+            test.deepEqual q.params(), ['bar', 'bar@example.com', 3, 5]
 
             test.done()
 
