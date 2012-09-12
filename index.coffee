@@ -11,11 +11,10 @@ Mohair = class
     # fluent
     # ======
 
-    # returns a new Mohair with `key` set to `value`
+    # returns a new Mohair instance with `key` set to `value`
 
     set: (key, value) ->
-        constructor = this.constructor
-        object = new constructor
+        object = new @constructor
         object._parent = @
         state = {}
         state[key] = value
