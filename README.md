@@ -1,6 +1,7 @@
 # mohair
 
 sql builder
+[![Build Status](https://travis-ci.org/[snd]/[mohair].png)](https://travis-ci.org/[YOUR_GITHUB_USERNAME]/[YOUR_PROJECT_NAME])
 
 [the readme for version 0.7.6 is still available here](https://github.com/snd/mohair/tree/7f6da92158ecbbc09fd45b03b94124f9a833a2a2)
 
