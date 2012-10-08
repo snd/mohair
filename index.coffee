@@ -58,9 +58,9 @@ Mohair = class
 
     order: (order) -> @set '_order', order
 
-    limit: (limit) -> @set '_limit', limit
+    limit: (limit) -> @set '_limit', parseInt limit
 
-    offset: (offset) -> @set '_offset', offset
+    offset: (offset) -> @set '_offset', parseInt offset
 
     # other
     # -----
