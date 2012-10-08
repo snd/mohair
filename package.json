@@ -9,8 +9,9 @@
     },
     "dependencies": {
         "criterion": "0.1.0"
+        "coffee-script": "1.3.3"
     },
     "devDependencies": {
-        "nodeunit": "*"
+        "nodeunit": "0.7.4"
     }
 }
