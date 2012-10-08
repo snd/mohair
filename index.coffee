@@ -41,8 +41,8 @@ module.exports =
     join: (arg) -> @set '_join', arg
     group: (arg) -> @set '_group', arg
     order: (arg) -> @set '_order', arg
-    limit: (arg) -> @set '_limit', arg
-    offset: (arg) -> @set '_offset', arg
+    limit: (arg) -> @set '_limit', parseInt arg, 10
+    offset: (arg) -> @set '_offset', parseInt arg, 10
 
     table: (table) -> @set '_table', table
 
