@@ -130,7 +130,7 @@ query.params()
 # []
 ```
 
-#### immutability
+##### immutability
 
 mohair objects are immutable.
 
@@ -155,4 +155,4 @@ deleteUser.params()    # [true, 'foo']
 
 everything chains!
 
-#### license: MIT
+### license: MIT
