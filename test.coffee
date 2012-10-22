@@ -222,3 +222,15 @@ module.exports =
         test.deepEqual deleteQuery.params(), [true, 'foo']
 
         test.done()
+
+    'escapeTableName': (test) ->
+        query = mohair
+            .escapeTableName((table) -> "\"#{table}\"")
+            .table('project')
+            .where(is_visible: true)
+
+        test.equal query.sql(),
+            'SELECT * FROM "project" WHERE is_visible = ?'
+        test.deepEqual query.params(), [true]
+
+        test.done()
