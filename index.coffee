@@ -6,8 +6,6 @@ values = (object) ->
         do (k, v) -> vs.push v
     vs
 
-defaultAction = {verb: 'select', param: '*'}
-
 module.exports =
 
     set: (key, value) ->
@@ -33,6 +31,7 @@ module.exports =
         @set '_action', {verb: 'insert', param: dataArray}
 
     _escapeTableName: (tableName) -> tableName
+    _action: {verb: 'select', param: '*'}
 
     escapeTableName: (arg) -> @set '_escapeTableName', arg
 
@@ -60,20 +59,18 @@ module.exports =
         @set '_where', if @_where? then @_where.and(where) else where
 
     sql: ->
-        action = @_action || defaultAction
-
         throw new Error 'sql() requires call to table() before it' unless @_table?
         table = @_escapeTableName @_table
 
-        switch action.verb
+        switch @_action.verb
             when 'insert'
-                keys = Object.keys action.param[0]
-                parts = action.param.map ->
+                keys = Object.keys @_action.param[0]
+                parts = @_action.param.map ->
                     questionMarks = keys.map -> '?'
                     "(#{questionMarks.join ', '})"
                 "INSERT INTO #{table}(#{keys.join ', '}) VALUES #{parts.join ', '}"
             when 'select'
-                sql = "SELECT #{action.param} FROM #{table}"
+                sql = "SELECT #{@_action.param} FROM #{table}"
                 sql += " #{@_join}" if @_join?
                 sql += " AND (#{@_joinCriterion.sql()})" if @_joinCriterion?
                 sql += " WHERE #{@_where.sql()}" if @_where?
@@ -83,7 +80,7 @@ module.exports =
                 sql += " OFFSET ?" if @_offset?
                 sql
             when 'update'
-                keys = Object.keys action.param
+                keys = Object.keys @_action.param
 
                 sql = "UPDATE #{table} SET #{keys.map((k) -> "#{k} = ?").join ', '}"
                 sql += " WHERE #{@_where.sql()}" if @_where?
@@ -94,19 +91,17 @@ module.exports =
                 sql
 
     params: ->
-        action = @_action || defaultAction
-
         params = []
-        switch action.verb
+        switch @_action.verb
             when 'insert'
-                action.param.forEach (x) -> params = params.concat values x
+                @_action.param.forEach (x) -> params = params.concat values x
             when 'select'
                 params = params.concat @_joinCriterion.params() if @_joinCriterion?
                 params = params.concat @_where.params() if @_where?
                 params.push @_limit if @_limit?
                 params.push @_offset if @_offset?
             when 'update'
-                params = params.concat values action.param
+                params = params.concat values @_action.param
                 params = params.concat @_where.params() if @_where?
             when 'delete'
                 params = params.concat @_where.params() if @_where?
