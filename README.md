@@ -3,8 +3,6 @@
 mohair is an sql builder for nodejs
 [![Build Status](https://travis-ci.org/snd/mohair.png)](https://travis-ci.org/snd/mohair)
 
-[the readme for version 0.7.6 is still available here](https://github.com/snd/mohair/tree/7f6da92158ecbbc09fd45b03b94124f9a833a2a2)
-
 ### install
 
     npm install mohair
@@ -158,7 +156,6 @@ updateUser.sql()       # 'UPDATE user SET name = ? WHERE is_visible = ? AND id =
 updateUser.params()    # ['i am visible', true, 3]
 
 deleteUser = visibleUsers.where({name: 'foo'}).delete()
-
 deleteUser.sql()       # 'DELETE FROM user WHERE is_visible = ? AND name = ?'
 deleteUser.params()    # [true, 'foo']
 ```
