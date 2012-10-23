@@ -165,6 +165,26 @@ module.exports =
 
             test.done()
 
+        'join with object criterion': (test) ->
+            q = mohair.table('user')
+                .join('JOIN project ON user.id = project.user_id', {'project.foo': {$null: true}, 'project.bar': 10})
+
+            test.equal q.sql(),
+                'SELECT * FROM user JOIN project ON user.id = project.user_id AND (project.foo IS NULL AND project.bar = ?)'
+            test.deepEqual q.params(), [10]
+
+            test.done()
+
+        'join with sql criterion': (test) ->
+            q = mohair.table('user')
+                .join('JOIN project ON user.id = project.user_id', 'project.foo = ?', 4)
+
+            test.equal q.sql(),
+                'SELECT * FROM user JOIN project ON user.id = project.user_id AND (project.foo = ?)'
+            test.deepEqual q.params(), [4]
+
+            test.done()
+
         'group': (test) ->
             q = mohair.table('user')
                 .select('user.*, count(project.id) AS project_count')
