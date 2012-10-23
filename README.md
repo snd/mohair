@@ -117,6 +117,15 @@ query.sql()     # 'SELECT * FROM user JOIN project ON user.id = project.user_id'
 query.params()  # []
 ```
 
+##### join with criterion
+
+```coffeescript
+query = user.join('JOIN project ON user.id = project.user_id', {'project.column': {$null: true}})
+
+query.sql()     # 'SELECT * FROM user JOIN project ON user.id = project.user_id AND (project.column IS NULL)'
+query.params()  # []
+```
+
 ##### group
 
 ```coffeescript
