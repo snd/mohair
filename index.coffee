@@ -42,7 +42,12 @@ module.exports =
 
     update: (updates) -> @set '_action', {verb: 'update', param: updates}
 
-    join: (arg) -> @set '_join', arg
+    join: (join, args...) ->
+        object = Object.create @
+        object._join = join
+        object._joinCriterion = criterion args... if args.length isnt 0
+        object
+
     group: (arg) -> @set '_group', arg
     order: (arg) -> @set '_order', arg
     limit: (arg) -> @set '_limit', parseInt arg, 10
@@ -70,12 +75,12 @@ module.exports =
             when 'select'
                 sql = "SELECT #{action.param} FROM #{table}"
                 sql += " #{@_join}" if @_join?
+                sql += " AND (#{@_joinCriterion.sql()})" if @_joinCriterion?
                 sql += " WHERE #{@_where.sql()}" if @_where?
                 sql += " GROUP BY #{@_group}" if @_group?
                 sql += " ORDER BY #{@_order}" if @_order?
                 sql += " LIMIT ?" if @_limit?
                 sql += " OFFSET ?" if @_offset?
-
                 sql
             when 'update'
                 keys = Object.keys action.param
@@ -96,6 +101,7 @@ module.exports =
             when 'insert'
                 action.param.forEach (x) -> params = params.concat values x
             when 'select'
+                params = params.concat @_joinCriterion.params() if @_joinCriterion?
                 params = params.concat @_where.params() if @_where?
                 params.push @_limit if @_limit?
                 params.push @_offset if @_offset?
