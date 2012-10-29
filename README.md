@@ -88,6 +88,8 @@ query.params()  # [3, 'foo']
 
 multiple calls to `where` are anded together.
 
+`where` can take any valid [criterion](https://github.com/snd/criterion).
+
 ##### order
 
 ```coffeescript
