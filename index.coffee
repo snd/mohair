@@ -30,10 +30,10 @@ module.exports =
 
         @set '_action', {verb: 'insert', param: dataArray}
 
-    _escapeTableName: (tableName) -> tableName
+    _escape: (string) -> string
     _action: {verb: 'select', param: '*'}
 
-    escapeTableName: (arg) -> @set '_escapeTableName', arg
+    escape: (arg) -> @set '_escape', arg
 
     select: (sql = '*') -> @set '_action', {verb: 'select', param: sql}
 
@@ -60,11 +60,11 @@ module.exports =
 
     sql: ->
         throw new Error 'sql() requires call to table() before it' unless @_table?
-        table = @_escapeTableName @_table
+        table = @_escape @_table
 
         switch @_action.verb
             when 'insert'
-                keys = Object.keys @_action.param[0]
+                keys = Object.keys(@_action.param[0]).map (key) => @_escape key
                 parts = @_action.param.map ->
                     questionMarks = keys.map -> '?'
                     "(#{questionMarks.join ', '})"
@@ -82,7 +82,8 @@ module.exports =
             when 'update'
                 keys = Object.keys @_action.param
 
-                sql = "UPDATE #{table} SET #{keys.map((k) -> "#{k} = ?").join ', '}"
+                updates = keys.map((k) => "#{@_escape k} = ?").join ', '
+                sql = "UPDATE #{table} SET #{updates}"
                 sql += " WHERE #{@_where.sql()}" if @_where?
                 sql
             when 'delete'
