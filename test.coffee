@@ -243,14 +243,39 @@ module.exports =
 
         test.done()
 
-    'escapeTableName': (test) ->
-        query = mohair
-            .escapeTableName((table) -> "\"#{table}\"")
-            .table('project')
-            .where(is_visible: true)
+    'escape':
+        'select': (test) ->
+            query = mohair
+                .escape((string) -> "\"#{string}\"")
+                .table('project')
+                .where(is_visible: true)
 
-        test.equal query.sql(),
-            'SELECT * FROM "project" WHERE is_visible = ?'
-        test.deepEqual query.params(), [true]
+            test.equal query.sql(),
+                'SELECT * FROM "project" WHERE is_visible = ?'
+            test.deepEqual query.params(), [true]
 
-        test.done()
+            test.done()
+
+        'insert': (test) ->
+            query = mohair
+                .escape((string) -> "\"#{string}\"")
+                .table('project')
+                .insert {first_key: 'first_value', second_key: 'second_value'}
+
+            test.equal query.sql(),
+                'INSERT INTO "project"("first_key", "second_key") VALUES (?, ?)'
+            test.deepEqual query.params(), ['first_value', 'second_value']
+
+            test.done()
+
+        'update': (test) ->
+            query = mohair
+                .escape((string) -> "\"#{string}\"")
+                .table('project')
+                .update {first_key: 'first_value', second_key: 'second_value'}
+
+            test.equal query.sql(),
+                'UPDATE "project" SET "first_key" = ?, "second_key" = ?'
+            test.deepEqual query.params(), ['first_value', 'second_value']
+
+            test.done()
