@@ -1,8 +1,8 @@
 {
     "name": "mohair",
-    "description": "sql builder",
+    "description": "mohair is an sql builder",
     "author": "Maximilian Krüger <kruemaxi@googlemail.com> (http://github.com/snd)",
-    "version": "0.9.0",
+    "version": "0.9.1",
     "repository": {
         "type": "git",
         "url": "git://github.com/snd/mohair.git"
