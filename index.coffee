@@ -32,6 +32,7 @@ module.exports =
 
     _escape: (string) -> string
     _action: {verb: 'select', param: '*'}
+    _joins: []
 
     escape: (arg) -> @set '_escape', arg
 
@@ -41,10 +42,13 @@ module.exports =
 
     update: (updates) -> @set '_action', {verb: 'update', param: updates}
 
-    join: (join, args...) ->
+    join: (sql, criterionArgs...) ->
         object = Object.create @
-        object._join = join
-        object._joinCriterion = criterion args... if args.length isnt 0
+        # slice without arguments clones an array
+        object._joins = @_joins.slice()
+        join = {sql: sql}
+        join.criterion = criterion criterionArgs... if criterionArgs.length isnt 0
+        object._joins.push join
         object
 
     group: (arg) -> @set '_group', arg
@@ -71,8 +75,9 @@ module.exports =
                 "INSERT INTO #{table}(#{keys.join ', '}) VALUES #{parts.join ', '}"
             when 'select'
                 sql = "SELECT #{@_action.param} FROM #{table}"
-                sql += " #{@_join}" if @_join?
-                sql += " AND (#{@_joinCriterion.sql()})" if @_joinCriterion?
+                @_joins.forEach (join) ->
+                    sql += " #{join.sql}"
+                    sql += " AND (#{join.criterion.sql()})" if join.criterion?
                 sql += " WHERE #{@_where.sql()}" if @_where?
                 sql += " GROUP BY #{@_group}" if @_group?
                 sql += " ORDER BY #{@_order}" if @_order?
@@ -97,7 +102,10 @@ module.exports =
             when 'insert'
                 @_action.param.forEach (x) -> params = params.concat values x
             when 'select'
-                params = params.concat @_joinCriterion.params() if @_joinCriterion?
+                @_joins.forEach (join) ->
+                    if join.criterion?
+                        params = params.concat join.criterion.params()
+
                 params = params.concat @_where.params() if @_where?
                 params.push @_limit if @_limit?
                 params.push @_offset if @_offset?
