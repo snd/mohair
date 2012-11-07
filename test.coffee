@@ -185,6 +185,17 @@ module.exports =
 
             test.done()
 
+        'multiple joins': (test) ->
+            q = mohair.table('user')
+                .join('OUTER JOIN project ON user.id = project.user_id', 'project.foo = ?', 4)
+                .join('INNER JOIN task ON project.id = task.project_id', {'task.bar': 10})
+
+            test.equal q.sql(),
+                'SELECT * FROM user OUTER JOIN project ON user.id = project.user_id AND (project.foo = ?) INNER JOIN task ON project.id = task.project_id AND (task.bar = ?)'
+            test.deepEqual q.params(), [4, 10]
+
+            test.done()
+
         'group': (test) ->
             q = mohair.table('user')
                 .select('user.*, count(project.id) AS project_count')
