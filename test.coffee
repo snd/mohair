@@ -65,7 +65,7 @@ module.exports =
                 .where('x BETWEEN ? AND ?', 50, 55)
                 .where($or: {x: 10, y: 6})
 
-            test.equal q.sql(), 'DELETE FROM user WHERE x BETWEEN ? AND ? AND (x = ?) OR (y = ?)'
+            test.equal q.sql(), 'DELETE FROM user WHERE (x BETWEEN ? AND ?) AND ((x = ?) OR (y = ?))'
             test.deepEqual q.params(), [50, 55, 10, 6]
 
             test.done()
@@ -85,7 +85,7 @@ module.exports =
                 .where(id: 3, x: 5)
                 .update {name: 'bar', email: 'bar@example.com'}
 
-            test.equal q.sql(), 'UPDATE user SET name = ?, email = ? WHERE id = ? AND x = ?'
+            test.equal q.sql(), 'UPDATE user SET name = ?, email = ? WHERE (id = ?) AND (x = ?)'
             test.deepEqual q.params(), ['bar', 'bar@example.com', 3, 5]
 
             test.done()
@@ -127,7 +127,7 @@ module.exports =
         'criteria are anded together': (test) ->
             q = mohair.table('user').where(id: 3).where('name = ?', 'foo').select()
 
-            test.equal q.sql(), 'SELECT * FROM user WHERE id = ? AND name = ?'
+            test.equal q.sql(), 'SELECT * FROM user WHERE (id = ?) AND (name = ?)'
             test.deepEqual q.params(), [3, 'foo']
 
             test.done()
@@ -170,7 +170,7 @@ module.exports =
                 .join('JOIN project ON user.id = project.user_id', {'project.foo': {$null: true}, 'project.bar': 10})
 
             test.equal q.sql(),
-                'SELECT * FROM user JOIN project ON user.id = project.user_id AND (project.foo IS NULL AND project.bar = ?)'
+                'SELECT * FROM user JOIN project ON user.id = project.user_id AND ((project.foo IS NULL) AND (project.bar = ?))'
             test.deepEqual q.params(), [10]
 
             test.done()
@@ -218,7 +218,7 @@ module.exports =
                 .limit(10)
                 .offset(20)
 
-            test.equal q.sql(), 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id WHERE id = ? AND name = ? GROUP BY user.id ORDER BY created DESC, name ASC LIMIT ? OFFSET ?'
+            test.equal q.sql(), 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id WHERE (id = ?) AND (name = ?) GROUP BY user.id ORDER BY created DESC, name ASC LIMIT ? OFFSET ?'
             test.deepEqual q.params(), [3, 'foo', 10, 20]
 
             test.done()
@@ -243,13 +243,13 @@ module.exports =
 
         updateQuery = visible.update({name: 'i am visible'}).where(id: 3)
         test.equal updateQuery.sql(),
-            'UPDATE project SET name = ? WHERE is_visible = ? AND id = ?'
+            'UPDATE project SET name = ? WHERE (is_visible = ?) AND (id = ?)'
         test.deepEqual updateQuery.params(), ['i am visible', true, 3]
 
         deleteQuery = visible.where({name: 'foo'}).delete()
 
         test.equal deleteQuery.sql(),
-            'DELETE FROM project WHERE is_visible = ? AND name = ?'
+            'DELETE FROM project WHERE (is_visible = ?) AND (name = ?)'
         test.deepEqual deleteQuery.params(), [true, 'foo']
 
         test.done()
