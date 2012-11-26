@@ -82,7 +82,7 @@ query.params()  # []
 ```coffeescript
 query = user.where(id: 3).where('name = ?', 'foo').select()
 
-query.sql()     # 'SELECT * FROM user WHERE id = ? AND name = ?'
+query.sql()     # 'SELECT * FROM user WHERE (id = ?) AND (name = ?)'
 query.params()  # [3, 'foo']
 ```
 
@@ -154,11 +154,11 @@ this means you can do stuff like this:
 visibleUsers = mohair.table('user').where(is_visible: true)
 
 updateUser = visibleUsers.update({name: 'i am visible'}).where(id: 3)
-updateUser.sql()       # 'UPDATE user SET name = ? WHERE is_visible = ? AND id = ?'
+updateUser.sql()       # 'UPDATE user SET name = ? WHERE (is_visible = ?) AND (id = ?)'
 updateUser.params()    # ['i am visible', true, 3]
 
 deleteUser = visibleUsers.where({name: 'foo'}).delete()
-deleteUser.sql()       # 'DELETE FROM user WHERE is_visible = ? AND name = ?'
+deleteUser.sql()       # 'DELETE FROM user WHERE (is_visible = ?) AND (name = ?)'
 deleteUser.params()    # [true, 'foo']
 ```
 
