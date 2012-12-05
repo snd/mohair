@@ -1,7 +1,8 @@
 # mohair
 
-mohair is an sql builder for nodejs
 [![Build Status](https://travis-ci.org/snd/mohair.png)](https://travis-ci.org/snd/mohair)
+
+mohair is an sql builder for nodejs
 
 ### install
 
