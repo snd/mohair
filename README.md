@@ -36,7 +36,7 @@ query.sql()     # 'INSERT INTO user(name) VALUES (?), (?)'
 query.params()  # ['foo', 'bar']
 ```
 
-all records in the argument array must have the same keys.
+all records in the argument array must have the same properties.
 
 ##### delete
 
