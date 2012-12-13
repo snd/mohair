@@ -105,7 +105,7 @@ query.params()  # []
 ```coffeescript
 query = user.limit(20).offset(10).select()
 
-query.sql()     # 'SELECT * FROM user LIMIT ? offset ?'
+query.sql()     # 'SELECT * FROM user LIMIT ? OFFSET ?'
 query.params()  # [20, 10]
 ```
 
