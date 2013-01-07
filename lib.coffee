@@ -6,13 +6,13 @@ values = (object) ->
         do (k, v) -> vs.push v
     vs
 
-module.exports =
 
+module.exports =
     set: (key, value) ->
         object = Object.create @
         object[key] = value
         object
-
+    connect: (conn) -> @set '_connect', conn
     insert: (data) ->
         throw new Error 'missing data' unless data?
         dataArray = if Array.isArray data then data else [data]
@@ -115,3 +115,6 @@ module.exports =
             when 'delete'
                 params = params.concat @_where.params() if @_where?
         params
+
+    exec: (fn) ->
+        @_connect.query @sql(), @params(), fn
