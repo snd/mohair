@@ -35,9 +35,8 @@ mohair
     console.log result
 
 ```
-
 ##### insert a record
-
+```coffeescript
 mohair
   .connect(conn)
   .table('test')
