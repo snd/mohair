@@ -117,4 +117,5 @@ module.exports =
         params
 
     exec: (fn) ->
+        console.log 'npm list moh'
         @_connect.query @sql(), @params(), fn
