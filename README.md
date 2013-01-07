@@ -53,7 +53,7 @@ mohair
   .table('test')
   .where(id:1)
   .delete()
-  .exex (err, result) ->
+  .exec (err, result) ->
     console.log result
 
 ```
