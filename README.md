@@ -141,6 +141,29 @@ query.params()
 # []
 ```
 
+##### connect && exec
+
+```coffeescript
+mohair = require 'mohair'
+mysql = require 'mysql'
+  
+conn = mysql.createConnection
+    host: 'localhost'
+    database: 'test'
+    user: 'root'
+    password: '123456'
+conn.connect
+
+mohair
+    .connect(conn)
+    .table('test')
+    .insert
+        name: 'test'
+        create: '2012'
+    .exec (err, result) ->
+      console.log result
+```
+
 ##### immutability
 
 mohair objects are immutable.
