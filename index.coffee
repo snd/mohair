@@ -36,7 +36,7 @@ module.exports =
 
     escape: (arg) -> @set '_escape', arg
 
-    select: (sql = '*') -> @set '_action', {verb: 'select', param: sql}
+    select: (sql = '*', args...) -> @set '_action', {verb: 'select', param: sql, args: args}
 
     delete: -> @set '_action', {verb: 'delete'}
 
@@ -102,6 +102,7 @@ module.exports =
             when 'insert'
                 @_action.param.forEach (x) -> params = params.concat values x
             when 'select'
+                params = params.concat @_action.args if @_action.args?
                 @_joins.forEach (join) ->
                     if join.criterion?
                         params = params.concat join.criterion.params()

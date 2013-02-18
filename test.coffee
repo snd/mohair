@@ -223,6 +223,17 @@ module.exports =
 
             test.done()
 
+        'select with param': (test) ->
+            subselect = "SELECT count(1) FROM has_many WHERE has_many.one_id = id AND state = ?"
+            select = "one.*, (#{subselect}) as partial_count"
+            q = mohair
+                .table('one')
+                .select(select, 'confirmed')
+            test.equal q.sql(), "SELECT #{select} FROM one"
+            test.deepEqual q.params(), ['confirmed']
+
+            test.done()
+
     'actions overwrite previous actions': (test) ->
         chain = mohair.table('user')
             .where(id: 3)
