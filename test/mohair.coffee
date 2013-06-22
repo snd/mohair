@@ -86,6 +86,54 @@ module.exports =
 
             test.done()
 
+        'with raw without params': (test) ->
+            q = mohair.table('user').insertMany [
+                {
+                    name: 'foo',
+                    user_id: 5
+                    created_at: mohair.raw('BAR()')
+                }
+                {
+                    user_id: 6
+                    created_at: mohair.raw('BAZ()')
+                    name: 'bar',
+                }
+                {
+                    created_at: mohair.raw('FOO()')
+                    name: 'baz',
+                    user_id: 7
+                }
+            ]
+
+            test.equal q.sql(), 'INSERT INTO user(name, user_id, created_at) VALUES (?, ?, BAR()), (?, ?, BAZ()), (?, ?, FOO())'
+            test.deepEqual q.params(), ['foo', 5, 'bar', 6, 'baz', 7]
+
+            test.done()
+
+        'with raw with params': (test) ->
+            q = mohair.table('user').insertMany [
+                {
+                    name: 'foo',
+                    user_id: 5
+                    created_at: mohair.raw('BAR(?, ?, ?)', 10, 11, 12)
+                }
+                {
+                    user_id: 6
+                    created_at: mohair.raw('BAZ(?)', 20)
+                    name: 'bar',
+                }
+                {
+                    created_at: mohair.raw('FOO(?, ?)', 30, 31)
+                    name: 'baz',
+                    user_id: 7
+                }
+            ]
+
+            test.equal q.sql(), 'INSERT INTO user(name, user_id, created_at) VALUES (?, ?, BAR(?, ?, ?)), (?, ?, BAZ(?)), (?, ?, FOO(?, ?))'
+            test.deepEqual q.params(), ['foo', 5, 10, 11, 12, 'bar', 6, 20, 'baz', 7, 30 ,31]
+
+            test.done()
+
     'delete':
 
         'without criteria': (test) ->
