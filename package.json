@@ -1,7 +1,8 @@
 {
     "name": "mohair",
-    "version": "0.9.4",
+    "version": "0.9.5",
     "description": "mohair is an sql builder",
+    "keywords": ["sql", "builder"],
     "homepage": "http://github.com/snd/mohair",
     "author": {
         "name": "Maximilian Krüger",
@@ -24,10 +25,18 @@
         "node": ">=0.8.5"
     },
     "dependencies": {
-        "coffee-script": "1.4.0",
-        "criterion": "0.2.1"
+        "criterion": "0.3.0"
     },
     "devDependencies": {
-        "nodeunit": "0.7.4"
+        "coffee-script": "1.6.3",
+        "nodeunit": "0.8"
+    },
+    "main": "src/mohair",
+    "scripts": {
+        "prepublish": "coffee --bare --compile --output src src/*.coffee",
+        "postpublish": "rm src/*.js",
+        "pretest": "coffee --bare --compile --output src src/*.coffee && coffee --bare --compile --output test test/*.coffee",
+        "posttest": "rm src/*.js && rm test/*.js",
+        "test": "nodeunit test/*.js"
     }
 }
