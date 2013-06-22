@@ -101,9 +101,13 @@ update =
         table = mohair._escape mohair._table
         keys = Object.keys that._updates
 
-        updates = keys.map((k) =>
-            "#{mohair._escape k} = ?").join ', '
-        sql = "UPDATE #{table} SET #{updates}"
+        updates = keys.map (key) ->
+            escapedKey = mohair._escape key
+            if isRaw that._updates[key]
+                "#{escapedKey} = #{that._updates[key].sql()}"
+            else
+                "#{escapedKey} = ?"
+        sql = "UPDATE #{table} SET #{updates.join ', '}"
         sql += " WHERE #{mohair._where.sql()}" if mohair._where?
         sql
     params: (mohair) ->
