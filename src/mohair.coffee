@@ -96,7 +96,8 @@ module.exports =
             when 'update'
                 keys = Object.keys @_action.param
 
-                updates = keys.map((k) => "#{@_escape k} = ?").join ', '
+                updates = keys.map((k) =>
+                    "#{@_escape k} = ?").join ', '
                 sql = "UPDATE #{table} SET #{updates}"
                 sql += " WHERE #{@_where.sql()}" if @_where?
                 sql
@@ -112,6 +113,7 @@ module.exports =
                 @_action.param.forEach (x) -> params = params.concat values x
             when 'select'
                 params = params.concat @_action.args if @_action.args?
+
                 @_joins.forEach (join) ->
                     if join.criterion?
                         params = params.concat join.criterion.params()
