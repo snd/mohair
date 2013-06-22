@@ -25,13 +25,25 @@ module.exports =
 
             test.done()
 
-    'insert': (test) ->
-        q = mohair.table('user').insert {name: 'foo', user_id: 5}
+    'insert':
+        'simple': (test) ->
+            q = mohair.table('user').insert {name: 'foo', user_id: 5}
 
-        test.equal q.sql(), 'INSERT INTO user(name, user_id) VALUES (?, ?)'
-        test.deepEqual q.params(), ['foo', 5]
+            test.equal q.sql(), 'INSERT INTO user(name, user_id) VALUES (?, ?)'
+            test.deepEqual q.params(), ['foo', 5]
 
-        test.done()
+            test.done()
+
+        'with simple raw': (test) ->
+            q = mohair.table('user').insert
+                name: 'foo',
+                user_id: 5
+                created_at: mohair.raw('NOW()')
+
+            test.equal q.sql(), 'INSERT INTO user(name, user_id, created_at) VALUES (?, ?, NOW())'
+            test.deepEqual q.params(), ['foo', 5]
+
+            test.done()
 
     'insertMany':
 
