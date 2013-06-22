@@ -12,31 +12,31 @@ module.exports =
 
         'create multiple records without matching keys': (test) ->
             test.throws ->
-                mohair.table('user').insert [
+                mohair.table('user').insertMany [
                     {name: 'foo', email: 'foo@example.com'}
                     {name: 'bar'}
                 ]
 
             test.throws ->
-                mohair.table('user').insert [
+                mohair.table('user').insertMany [
                     {name: 'foo', email: 'foo@example.com'}
                     {name: 'bar', id: 9}
                 ]
 
             test.done()
 
-    'insert':
+    'insert': (test) ->
+        q = mohair.table('user').insert {name: 'foo', user_id: 5}
 
-        'a record': (test) ->
-            q = mohair.table('user').insert {name: 'foo', user_id: 5}
+        test.equal q.sql(), 'INSERT INTO user(name, user_id) VALUES (?, ?)'
+        test.deepEqual q.params(), ['foo', 5]
 
-            test.equal q.sql(), 'INSERT INTO user(name, user_id) VALUES (?, ?)'
-            test.deepEqual q.params(), ['foo', 5]
+        test.done()
 
-            test.done()
+    'insertMany':
 
-        'multiple records': (test) ->
-            q = mohair.table('user').insert [
+        'records with same key order': (test) ->
+            q = mohair.table('user').insertMany [
                 {name: 'foo', email: 'foo@example.com'}
                 {name: 'bar', email: 'bar@example.com'}
                 {name: 'baz', email: 'baz@example.com'}
@@ -46,6 +46,20 @@ module.exports =
                 'INSERT INTO user(name, email) VALUES (?, ?), (?, ?), (?, ?)'
             test.deepEqual q.params(),
                 ['foo', 'foo@example.com', 'bar', 'bar@example.com', 'baz', 'baz@example.com']
+
+            test.done()
+
+        'records with different key order': (test) ->
+            q = mohair.table('user').insertMany [
+                {name: 'foo', email: 'foo@example.com', age: 16}
+                {email: 'bar@example.com', name: 'bar', age: 25}
+                {age: 30, name: 'baz', email: 'baz@example.com'}
+            ]
+
+            test.equal q.sql(),
+                'INSERT INTO user(name, email, age) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)'
+            test.deepEqual q.params(),
+                ['foo', 'foo@example.com', 16, 'bar', 'bar@example.com', 25, 'baz', 'baz@example.com', 30]
 
             test.done()
 
