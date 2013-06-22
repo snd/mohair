@@ -7,6 +7,7 @@ values = (object) ->
     vs
 
 module.exports =
+    raw: (sql, params...) ->
 
     set: (key, value) ->
         object = Object.create @
