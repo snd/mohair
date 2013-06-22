@@ -34,7 +34,7 @@ module.exports =
 
             test.done()
 
-        'with simple raw': (test) ->
+        'with raw without params': (test) ->
             q = mohair.table('user').insert
                 name: 'foo',
                 user_id: 5
@@ -42,6 +42,17 @@ module.exports =
 
             test.equal q.sql(), 'INSERT INTO user(name, user_id, created_at) VALUES (?, ?, NOW())'
             test.deepEqual q.params(), ['foo', 5]
+
+            test.done()
+
+        'with raw with params': (test) ->
+            q = mohair.table('user').insert
+                name: 'foo',
+                user_id: 5
+                created_at: mohair.raw('LOG(x, ?)', 3)
+
+            test.equal q.sql(), 'INSERT INTO user(name, user_id, created_at) VALUES (?, ?, LOG(x, ?))'
+            test.deepEqual q.params(), ['foo', 5, 3]
 
             test.done()
 
