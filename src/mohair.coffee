@@ -12,10 +12,10 @@ values = (object) ->
 
 module.exports =
     raw: (sql, params...) ->
-        o = Object.create rawPrototype
-        o._sql = sql
-        o._params = params
-        return o
+        object = Object.create rawPrototype
+        object._sql = sql
+        object._params = params
+        object
 
     set: (key, value) ->
         object = Object.create @
