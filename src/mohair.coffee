@@ -1,5 +1,9 @@
 criterion = require 'criterion'
 
+rawPrototype =
+    sql: -> @_sql
+    params: -> @_params
+
 values = (object) ->
     vs = []
     for k, v of object
@@ -8,6 +12,9 @@ values = (object) ->
 
 module.exports =
     raw: (sql, params...) ->
+        o = Object.create rawPrototype
+        o._sql = sql
+        o._params = params
 
     set: (key, value) ->
         object = Object.create @
