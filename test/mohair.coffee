@@ -175,6 +175,34 @@ module.exports =
 
             test.done()
 
+        'with raw without params': (test) ->
+            q = mohair.table('user')
+                .where(id: 3, x: 5)
+                .update {
+                    name: 'foo',
+                    user_id: 6
+                    modified_at: mohair.raw('NOW()')
+                }
+
+            test.equal q.sql(), 'UPDATE user SET name = ?, user_id = ?, modified_at = NOW() WHERE (id = ?) AND (x = ?)'
+            test.deepEqual q.params(), ['foo', 6, 3, 5]
+
+            test.done()
+
+        'with raw with params': (test) ->
+            q = mohair.table('user')
+                .where(id: 3, x: 5)
+                .update {
+                    name: 'foo',
+                    user_id: mohair.raw('LOG(user_id, ?)', 4)
+                    modified_at: mohair.raw('NOW()')
+                }
+
+            test.equal q.sql(), 'UPDATE user SET name = ?, user_id = LOG(user_id, ?), modified_at = NOW() WHERE (id = ?) AND (x = ?)'
+            test.deepEqual q.params(), ['foo', 4, 3, 5]
+
+            test.done()
+
     'select':
 
         'default is select *': (test) ->
