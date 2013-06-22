@@ -15,6 +15,7 @@ module.exports =
         o = Object.create rawPrototype
         o._sql = sql
         o._params = params
+        return o
 
     set: (key, value) ->
         object = Object.create @
