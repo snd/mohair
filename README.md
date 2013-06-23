@@ -2,167 +2,186 @@
 
 [![Build Status](https://travis-ci.org/snd/mohair.png)](https://travis-ci.org/snd/mohair)
 
-mohair is an sql builder for nodejs
+mohair is a simple and flexible sql builder with a fluent interface.
+
+[mesa](https://github.com/snd/mohair) builds on top of mohair and adds
+methods to execute queries, to declare and include associations (`hasOne`, `belongsTo`, `hasMany`, `hasAndBelongsToMany`) and more:
+[go check it out.](https://github.com/snd/mesa)
 
 ### install
 
-    npm install mohair
+```
+npm install mohair
+```
 
 ### use
 
-##### use a table
+mohair has a fluent interface where every method returns a new object.
+no method ever changes the state of the object it is called on.
+this enables a functional programming style:
 
-```coffeescript
-mohair = require 'mohair'
+```javascript
+var visibleUsers = mohair.table('user').where(is_visible: true);
 
-user = mohair.table 'user'  # will be used in all the following examples
+var updateUser = visibleUsers.update({name: 'bob'}).where(id: 3);
+updateUser.sql();       // => 'UPDATE user SET name = ? WHERE (is_visible = ?) AND (id = ?)'
+updateUser.params();    // => ['bob', true, 3]
+
+var deleteUser = visibleUsers.where({name: 'alice'}).delete();
+deleteUser.sql();       // => 'DELETE FROM user WHERE (is_visible = ?) AND (name = ?)'
+deleteUser.params();    // => [true, 'alice']
+```
+
+##### require
+
+```javascript
+var mohair = require('mohair');
+```
+
+##### specify the table to use
+
+```javascript
+var userTable = mohair.table('user');
 ```
 
 ##### insert a record
 
-```coffeescript
-query = user.insert {name: 'foo', email: 'foo@example.com'}
+```javascript
+var query = userTable.insert({name: 'alice', email: 'alice@example.com'});
 
-query.sql()     # 'INSERT INTO user(name, email) VALUES (?, ?)'
-query.params()  # ['foo', 'foo@example.com']
+query.sql();        // => 'INSERT INTO user(name, email) VALUES (?, ?)'
+query.params();     // => ['alice', 'alice@example.com']
+```
+
+##### insert with some raw sql
+
+```javascript
+var query = userTable.insert({name: 'alice', created_at: mohair.raw('NOW()')});
+
+query.sql();        // => 'INSERT INTO user(name, created_at) VALUES (?, NOW())'
+query.params();     // => ['alice']
 ```
 
 ##### insert multiple records
 
-```coffeescript
-query = user.insert [{name: 'foo'}, {name: 'bar'}]
+```javascript
+var query = userTable.insertMany([{name: 'alice'}, {name: 'bob'}]);
 
-query.sql()     # 'INSERT INTO user(name) VALUES (?), (?)'
-query.params()  # ['foo', 'bar']
+query.sql();        // => 'INSERT INTO user(name) VALUES (?), (?)'
+query.params();     // => ['alice', 'bob']
 ```
 
 all records in the argument array must have the same properties.
 
 ##### delete
 
-```coffeescript
-user.where(id: 3).delete()
+```javascript
+var query = userTable.where(id: 3).delete();
 
-query.sql()     # 'DELETE FROM user WHERE id = ?'
-query.params()  # [3]
+query.sql();        // => 'DELETE FROM user WHERE id = ?'
+query.params();     // => [3]
 ```
 
 `where` can take any valid [criterion](https://github.com/snd/criterion).
 
 ##### update
 
-```coffeescript
-query = user.where({name: 'foo'}).update({name: 'bar'})
+```javascript
+var query = userTable.where({name: 'alice'}).update({name: 'bob'});
 
-query.sql()     # 'UPDATE user SET name = ? WHERE name = ?'
-query.params()  # ['bar', 'foo']
+query.sql();        // => 'UPDATE user SET name = ? WHERE name = ?'
+query.params();     // => ['bob', 'alice']
 ```
+
+##### update with some raw sql
+
+```javascript
+var query = userTable.where({name: 'alice'}).update({age: mohair.raw('LOG(age, ?)', 4)});
+
+query.sql();        // => 'UPDATE user SET age = LOG(age, ?) WHERE name = ?'
+query.params();     // => [4, 'alice']
+```
+
+`where` can take any valid [criterion](https://github.com/snd/criterion).
 
 ##### select
 
-```coffeescript
-query = user.select()
+```javascript
+var query = userTable.select();
 
-query.sql()     # 'SELECT * FROM user'
-query.params()  # []
+query.sql();        // => 'SELECT * FROM user'
+query.params();     // => []
 ```
 
 you can omit `select()` if you want to select `*`. select is the default action.
 
 ##### select specific fields
 
-```coffeescript
-query = user.select('name, timestamp AS created_at')
+```javascript
+var query = userTable.select('name, timestamp AS created_at');
 
-query.sql()     # 'SELECT name, timestamp AS created_at FROM user'
-query.params()  # []
+query.sql();        // => 'SELECT name, timestamp AS created_at FROM user'
+query.params();     // => []
 ```
 
 ##### select with criteria
 
-```coffeescript
-query = user.where(id: 3).where('name = ?', 'foo').select()
+```javascript
+var query = userTable.where(id: 3).where('name = ?', 'alice').select();
 
-query.sql()     # 'SELECT * FROM user WHERE (id = ?) AND (name = ?)'
-query.params()  # [3, 'foo']
+query.sql();        // => 'SELECT * FROM user WHERE (id = ?) AND (name = ?)'
+query.params();     // => [3, 'alice']
 ```
 
-multiple calls to `where` are anded together.
-
 `where` can take any valid [criterion](https://github.com/snd/criterion).
+multiple calls to `where` are anded together.
 
 ##### order
 
-```coffeescript
-query = user.order('created DESC, name ASC').select()
+```javascript
+var query = userTable.order('created DESC, name ASC').select();
 
-query.sql()     # 'SELECT * FROM user ORDER BY created DESC, name ASC'
-query.params()  # []
+query.sql();        // => 'SELECT * FROM user ORDER BY created DESC, name ASC'
+query.params();     // => []
 ```
 
 ##### limit and offset
 
-```coffeescript
-query = user.limit(20).offset(10).select()
+```javascript
+var query = userTable.limit(20).offset(10).select();
 
-query.sql()     # 'SELECT * FROM user LIMIT ? OFFSET ?'
-query.params()  # [20, 10]
+query.sql();        // => 'SELECT * FROM user LIMIT ? OFFSET ?'
+query.params();     // => [20, 10]
 ```
 
 ##### join
 
-```coffeescript
-query = user.join('JOIN project ON user.id = project.user_id')
+```javascript
+var query = userTable.join('JOIN project ON user.id = project.user_id');
 
-query.sql()     # 'SELECT * FROM user JOIN project ON user.id = project.user_id'
-query.params()  # []
+query.sql();        // => 'SELECT * FROM user JOIN project ON user.id = project.user_id'
+query.params();     // => []
 ```
 
 ##### join with criteria
 
-```coffeescript
-query = user.join('JOIN project ON user.id = project.user_id', {'project.column': {$null: true}})
+```javascript
+var query = userTable.join('JOIN project ON user.id = project.user_id', {'project.column': {$null: true}});
 
-query.sql()     # 'SELECT * FROM user JOIN project ON user.id = project.user_id AND (project.column IS NULL)'
-query.params()  # []
+query.sql();        // => 'SELECT * FROM user JOIN project ON user.id = project.user_id AND (project.column IS NULL)'
+query.params();     // => []
 ```
 
 ##### group
 
-```coffeescript
-query = user
+```javascript
+var query = userTable
     .select('user.*, count(project.id) AS project_count')
     .join('JOIN project ON user.id = project.user_id')
-    .group('user.id')
+    .group('user.id');
 
-query.sql()
-# 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id GROUP BY user.id'
-query.params()
-# []
+query.sql();        // => 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id GROUP BY user.id'
+query.params();     // => []
 ```
-
-##### immutability
-
-mohair objects are immutable.
-
-every method call returns a new object.
-
-no method call ever changes the state of the object it is called on.
-
-this means you can do stuff like this:
-
-```coffeescript
-visibleUsers = mohair.table('user').where(is_visible: true)
-
-updateUser = visibleUsers.update({name: 'i am visible'}).where(id: 3)
-updateUser.sql()       # 'UPDATE user SET name = ? WHERE (is_visible = ?) AND (id = ?)'
-updateUser.params()    # ['i am visible', true, 3]
-
-deleteUser = visibleUsers.where({name: 'foo'}).delete()
-deleteUser.sql()       # 'DELETE FROM user WHERE (is_visible = ?) AND (name = ?)'
-deleteUser.params()    # [true, 'foo']
-```
-
-everything chains!
 
 ### license: MIT
