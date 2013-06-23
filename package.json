@@ -1,6 +1,6 @@
 {
     "name": "mohair",
-    "version": "0.10.1",
+    "version": "0.10.2",
     "description": "mohair is a simple and flexible sql builder with a fluent interface",
     "keywords": ["sql", "builder", "fluid"],
     "homepage": "http://github.com/snd/mohair",
@@ -25,7 +25,7 @@
         "node": ">=0.8.5"
     },
     "dependencies": {
-        "criterion": "0.3.1"
+        "criterion": "0.3.2"
     },
     "devDependencies": {
         "coffee-script": "1.6.3",
