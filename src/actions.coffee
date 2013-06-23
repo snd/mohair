@@ -1,5 +1,5 @@
 isRaw = (x) ->
-    ('object' is typeof x) and ('function' is typeof x.sql)
+    x? and ('object' is typeof x) and ('function' is typeof x.sql)
 
 insert =
     sql: (mohair) ->
