@@ -21,9 +21,9 @@ no method ever changes the state of the object it is called on.
 this enables a functional programming style:
 
 ```javascript
-var visibleUsers = mohair.table('user').where(is_visible: true);
+var visibleUsers = mohair.table('user').where({is_visible: true});
 
-var updateUser = visibleUsers.update({name: 'bob'}).where(id: 3);
+var updateUser = visibleUsers.update({name: 'bob'}).where({id: 3});
 updateUser.sql();       // => 'UPDATE user SET name = ? WHERE (is_visible = ?) AND (id = ?)'
 updateUser.params();    // => ['bob', true, 3]
 
@@ -76,7 +76,7 @@ all records in the argument array must have the same properties.
 ##### delete
 
 ```javascript
-var query = userTable.where(id: 3).delete();
+var query = userTable.where({id: 3}).delete();
 
 query.sql();        // => 'DELETE FROM user WHERE id = ?'
 query.params();     // => [3]
@@ -127,7 +127,7 @@ query.params();     // => []
 ##### select with criteria
 
 ```javascript
-var query = userTable.where(id: 3).where('name = ?', 'alice').select();
+var query = userTable.where({id: 3}).where('name = ?', 'alice').select();
 
 query.sql();        // => 'SELECT * FROM user WHERE (id = ?) AND (name = ?)'
 query.params();     // => [3, 'alice']
