@@ -1,7 +1,7 @@
 {
     "name": "mohair",
     "version": "0.10.0",
-    "description": "mohair is an sql builder",
+    "description": "mohair is a simple and flexible sql builder with a fluent interface",
     "keywords": ["sql", "builder", "fluid"],
     "homepage": "http://github.com/snd/mohair",
     "author": {
