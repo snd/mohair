@@ -189,7 +189,7 @@ query.params();     // => []
 ```javascript
 var regionalSales = mohair
     .select('region, SUM(amount) AS total_sales')
-    .table('order')
+    .table('orders')
     .group('region');
 
 var topRegions = mohair
