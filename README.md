@@ -225,13 +225,13 @@ query.params();     // => []
 
 ```javascript
 var regionalSales = mohair
-    .table('order')
     .select('region, SUM(amount) AS total_sales')
+    .table('order')
     .group('region')
 
 var topRegions = mohair
-    .table('regional_sales')
     .select('region')
+    .table('regional_sales')
     .where('total_sales > (SELECT SUM(total_sales/10 FROM regional_sales))');
 
 var query = mohair
