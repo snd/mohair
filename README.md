@@ -221,10 +221,9 @@ query.params();     // => []
 
 ##### common table expressions
 
+[see the postgres documentation](http://www.postgresql.org/docs/9.2/static/queries-with.html)
+
 ```javascript
-
-var orderTable = mohair.table('order');
-
 var regionalSales = mohair
     .table('order')
     .select('region, SUM(amount) AS total_sales')
@@ -275,7 +274,5 @@ FROM orders
 WHERE region IN (SELECT region FROM top_regions)
 GROUP BY region, product;
 ```
-
-[taken from the postgres documentation on cte's](http://www.postgresql.org/docs/9.2/static/queries-with.html)
 
 ### license: MIT
