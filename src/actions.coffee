@@ -1,6 +1,15 @@
 isRaw = (x) ->
     x? and ('object' is typeof x) and ('function' is typeof x.sql)
 
+asRaw = (x) ->
+    if isRaw x
+        return x
+
+    unless 'string' is typeof x
+        throw new Exception 'raw or string expected'
+
+    {sql: x, params: []}
+
 insert =
     sql: (mohair) ->
         that = this
@@ -65,7 +74,17 @@ select =
     sql: (mohair) ->
         that = this
         table = mohair._escape mohair._table
-        sql = "SELECT #{that._sql} FROM #{table}"
+        sql = ''
+
+        if mohair._with?
+            sql += 'WITH '
+            parts = []
+            parts = Object.keys(mohair._with).map (key) ->
+                key + ' AS (' + asRaw(mohair._with[key]).sql() + ')'
+            sql += parts.join(', ')
+            sql += ' '
+
+        sql += "SELECT #{that._sql} FROM #{table}"
         mohair._joins.forEach (join) ->
             sql += " #{join.sql}"
             sql += " AND (#{join.criterion.sql()})" if join.criterion?
@@ -78,6 +97,11 @@ select =
     params: (mohair) ->
         that = this
         params = []
+
+        if mohair._with?
+            Object.keys(mohair._with).forEach (key) ->
+                params = params.concat asRaw(mohair._with[key]).params()
+
         params = params.concat that._params if that._params?
 
         mohair._joins.forEach (join) ->
