@@ -474,12 +474,11 @@ module.exports =
                     regional_sales: regionalSales
                     top_regions: topRegions
                 )
-                .select("region, product, SUM(quantity) AS product_units, SUM(amount) AS product_sales")
+                .select()
                 .table('orders')
                 .where('type = ?', 'test')
-                .group('region, product')
 
-            expected = "WITH regional_sales AS (regional_sales), top_regions AS (top_regions) SELECT region, product, SUM(quantity) AS product_units, SUM(amount) AS product_sales FROM orders WHERE type = ? GROUP BY region, product"
+            expected = "WITH regional_sales AS (regional_sales), top_regions AS (top_regions) SELECT * FROM orders WHERE type = ?"
 
             test.equals query.sql(), expected
             test.deepEqual query.params(), [1, 2, 3, 4, 5, 6, 'test']
