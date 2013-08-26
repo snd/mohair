@@ -459,3 +459,29 @@ module.exports =
             test.deepEqual query.params(), []
 
             test.done()
+
+        params: (test) ->
+            regionalSales =
+                sql: -> 'regional_sales'
+                params: -> [1, 2, 3]
+
+            topRegions =
+                sql: -> 'top_regions'
+                params: -> [4, 5, 6]
+
+            query = mohair
+                .with(
+                    regional_sales: regionalSales
+                    top_regions: topRegions
+                )
+                .select("region, product, SUM(quantity) AS product_units, SUM(amount) AS product_sales")
+                .table('orders')
+                .where('type = ?', 'test')
+                .group('region, product')
+
+            expected = "WITH regional_sales AS (regional_sales), top_regions AS (top_regions) SELECT region, product, SUM(quantity) AS product_units, SUM(amount) AS product_sales FROM orders WHERE type = ? GROUP BY region, product"
+
+            test.equals query.sql(), expected
+            test.deepEqual query.params(), [1, 2, 3, 4, 5, 6, 'test']
+
+            test.done()
