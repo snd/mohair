@@ -474,7 +474,6 @@ module.exports =
                     regional_sales: regionalSales
                     top_regions: topRegions
                 )
-                .select()
                 .table('orders')
                 .where('type = ?', 'test')
 
