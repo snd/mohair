@@ -69,6 +69,10 @@ module.exports =
 
         object
 
+    with: (arg) ->
+        unless ('object' is typeof arg) and Object.keys(arg).length isnt 0
+            throw new Error 'with must be called with an object that has at least one property'
+        @fluent '_with', arg
     group: (arg) ->
         @fluent '_group', arg
     order: (arg) ->
