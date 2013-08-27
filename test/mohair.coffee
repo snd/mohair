@@ -245,6 +245,61 @@ module.exports =
 
             test.done()
 
+        'specific fields provided individually': (test) ->
+            q = mohair.table('user').select('name', 'timestamp AS created_at')
+
+            test.equal q.sql(), 'SELECT name, timestamp AS created_at FROM user'
+            test.deepEqual q.params(), []
+
+            test.done()
+
+        'with object': (test) ->
+            q = mohair.table('user').select('name', {created_at: 'timestamp'})
+
+            test.equal q.sql(), 'SELECT name, timestamp AS created_at FROM user'
+            test.deepEqual q.params(), []
+
+            test.done()
+
+        'with raw': (test) ->
+            q = mohair.table('user').select('name', mohair.raw('count/?', 10))
+
+            test.equal q.sql(), 'SELECT name, (count/?) FROM user'
+            test.deepEqual q.params(), [10]
+
+            test.done()
+
+        'with raw and object': (test) ->
+            q = mohair.table('user').select('name', {number: mohair.raw('count/?', 10)})
+
+            test.equal q.sql(), 'SELECT name, (count/?) AS number FROM user'
+            test.deepEqual q.params(), [10]
+
+            test.done()
+
+        'with subquery': (test) ->
+            subquery = mohair
+                .table('order')
+                .where('user_id = user.id')
+                .where('price > ?', 10)
+                .select('count(1)')
+            q = mohair
+                .table('user')
+                .select('name', {order_count: subquery})
+
+            test.equal q.sql(), 'SELECT name, (SELECT count(1) FROM order WHERE (user_id = user.id) AND (price > ?)) AS order_count FROM user'
+            test.deepEqual q.params(), [10]
+
+            test.done()
+
+        'without table': (test) ->
+            q = mohair.select('now()')
+
+            test.equal q.sql(), 'SELECT now()'
+            test.deepEqual q.params(), []
+
+            test.done()
+
         'with criteria': (test) ->
             q = mohair.table('user').where(id: 3).select()
 
@@ -349,17 +404,6 @@ module.exports =
 
             test.equal q.sql(), 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id WHERE (id = ?) AND (name = ?) GROUP BY user.id ORDER BY created DESC, name ASC LIMIT ? OFFSET ?'
             test.deepEqual q.params(), [3, 'foo', 10, 20]
-
-            test.done()
-
-        'select with param': (test) ->
-            subselect = "SELECT count(1) FROM has_many WHERE has_many.one_id = id AND state = ?"
-            select = "one.*, (#{subselect}) as partial_count"
-            q = mohair
-                .table('one')
-                .select(select, 'confirmed')
-            test.equal q.sql(), "SELECT #{select} FROM one"
-            test.deepEqual q.params(), ['confirmed']
 
             test.done()
 
