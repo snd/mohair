@@ -49,8 +49,8 @@ module.exports =
     escape: (arg) ->
         @fluent '_escape', arg
 
-    select: (sql = '*', params...) ->
-        @fluent '_action', actions.select sql, params
+    select: ->
+        @fluent '_action', actions.select.apply null, arguments
 
     delete: ->
         @fluent '_action', actions.delete()
@@ -90,7 +90,6 @@ module.exports =
         @fluent '_where', if @_where? then @_where.and(where) else where
 
     sql: ->
-        throw new Error 'sql() requires call to table() before it' unless @_table?
         @_action.sql @
 
     params: ->
