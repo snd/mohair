@@ -119,6 +119,7 @@ select =
             sql += " AND (#{join.criterion.sql()})" if join.criterion?
         sql += " WHERE #{mohair._where.sql()}" if mohair._where?
         sql += " GROUP BY #{mohair._group}" if mohair._group?
+        sql += " HAVING #{mohair._having.sql()}" if mohair._having?
         sql += " ORDER BY #{mohair._order}" if mohair._order?
         sql += " LIMIT ?" if mohair._limit?
         sql += " OFFSET ?" if mohair._offset?

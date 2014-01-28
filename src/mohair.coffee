@@ -89,6 +89,10 @@ module.exports =
         where = criterion args...
         @fluent '_where', if @_where? then @_where.and(where) else where
 
+    having: (args...) ->
+        having = criterion args...
+        @fluent '_having', if @_having? then @_having.and(having) else having
+
     sql: ->
         @_action.sql @
 
