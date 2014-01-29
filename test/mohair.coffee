@@ -380,6 +380,16 @@ module.exports =
 
             test.done()
 
+        'having': (test) ->
+            q = mohair.table('user')
+                .select('user.id, (select project.id from project) projectId')
+                .having('projectId = user.id')
+
+            test.equal q.sql(),
+                'SELECT user.id, (select project.id from project) projectId FROM user HAVING projectId = user.id'
+
+            test.done()
+
         'group': (test) ->
             q = mohair.table('user')
                 .select('user.*, count(project.id) AS project_count')
