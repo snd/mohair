@@ -93,6 +93,9 @@ module.exports =
         having = criterion args...
         @fluent '_having', if @_having? then @_having.and(having) else having
 
+    cascade: (arg) ->
+        @fluent '_cascade', true
+
     sql: ->
         @_action.sql @
 

@@ -204,6 +204,7 @@ deletePrototype =
         table = mohair._escape mohair._table
         sql = "DELETE FROM #{table}"
         sql += " WHERE #{mohair._where.sql()}" if mohair._where?
+        sql += " CASCADE" if mohair._cascade?
         sql
     params: (mohair) ->
         if mohair._where?
