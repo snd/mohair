@@ -163,6 +163,19 @@ module.exports =
 
             test.done()
 
+        'cascade': (test) ->
+            q = mohair.table('user')
+                .delete()
+                .cascade()
+                .where('x BETWEEN ? AND ?', 50, 55)
+                .where($or: {x: 10, y: 6})
+
+            test.equal q.sql(), 'DELETE FROM user WHERE (x BETWEEN ? AND ?) AND ((x = ?) OR (y = ?)) CASCADE'
+            test.deepEqual q.params(), [50, 55, 10, 6]
+
+            test.done()
+
+
     'update':
 
         'without criteria': (test) ->
