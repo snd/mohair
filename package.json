@@ -9,6 +9,10 @@
         "email": "kruemaxi@gmail.com",
         "url": "http://github.com/snd"
     },
+    "contributors": [{
+        "name": "clariture",
+        "url": "https://github.com/clariture"
+    }],
     "bugs": {
         "url": "http://github.com/snd/mohair/issues",
         "email": "kruemaxi@gmail.com"
