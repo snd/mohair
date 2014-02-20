@@ -183,6 +183,19 @@ module.exports =
 
             test.done()
 
+        'with criteria from multiple tables': (test) ->
+            q = mohair.table('user')
+                .from('addresses as a, phones as p')
+                .where("user.id": 3, "user.x": 5, "a.city": "foo", "p.number": "1234567890")
+                .where("a.user_id = user.id")
+                .where("p.user_id = user.id")
+                .update {name: 'bar', email: 'bar@example.com'}
+
+            test.equal q.sql(), 'UPDATE user SET name = ?, email = ? FROM addresses as a, phones as p WHERE (((user.id = ?) AND (user.x = ?) AND (a.city = ?) AND (p.number = ?)) AND (a.user_id = user.id)) AND (p.user_id = user.id)'
+            test.deepEqual q.params(), ['bar', 'bar@example.com', 3, 5, 'foo', '1234567890']
+
+            test.done()
+
         'with raw without params': (test) ->
             q = mohair.table('user')
                 .where(id: 3, x: 5)
