@@ -94,6 +94,20 @@ module.exports =
 
             test.done()
 
+        'records with null values': (test) ->
+            q = mohair.table('user').insertMany [
+                {name: 'foo', email: 'foo@example.com', age: null}
+                {email: 'bar@example.com', name: null, age: 25}
+                {age: 30, name: 'baz', email: null}
+            ]
+
+            test.equal q.sql(),
+                'INSERT INTO user(name, email, age) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)'
+            test.deepEqual q.params(),
+                ['foo', 'foo@example.com', null, null, 'bar@example.com', 25, 'baz', null, 30]
+
+            test.done()
+
         'with raw without params': (test) ->
             q = mohair.table('user').insertMany [
                 {
