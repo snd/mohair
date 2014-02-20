@@ -228,6 +228,22 @@ query.sql();        // => 'SELECT user.*, count(project.id) AS project_count FRO
 query.params();     // => []
 ```
 
+##### mixins
+
+```javascript
+var mostRecentlyUpdated = function() {
+    return this.order("updated_at DESC").limit(1);
+};
+
+var q1 = mohair.table('posts').mixin(mostRecentlyUpdated);
+var q2 = mohair.table('comments').mixin(mostRecentlyUpdated);
+
+q1.sql();           // => 'SELECT * FROM posts ORDER BY updated_at DESC LIMIT ?'
+q1.params();        // => [1]
+q2.sql();           // => 'SELECT * FROM comments ORDER BY updated_at DESC LIMIT ?'
+q2.params();        // => [1]
+```
+
 ##### common table expressions
 
 [see the postgres documentation](http://www.postgresql.org/docs/9.2/static/queries-with.html)
