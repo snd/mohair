@@ -14,6 +14,20 @@ methods to execute queries, to declare and include associations (`hasOne`, `belo
 npm install mohair
 ```
 
+**or**
+
+put this line in the dependencies section of your `package.json`:
+
+```
+"mohair": "0.12.0"
+```
+
+then run:
+
+```
+npm install
+```
+
 ### use
 
 mohair has a fluent interface where every method returns a new object.
