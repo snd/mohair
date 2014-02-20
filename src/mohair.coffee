@@ -42,7 +42,9 @@ module.exports =
             throw new Error msg if keys.length isnt keysOfFirstRecord.length
 
             keysOfFirstRecord.forEach (key) ->
-                throw new Error msg unless data.hasOwnProperty key
+                value = data[key]
+                if not value? and data[key] isnt null
+                    throw new Error msg
 
         @fluent '_action', actions.insertMany array
 
