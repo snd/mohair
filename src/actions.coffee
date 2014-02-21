@@ -176,6 +176,7 @@ update =
             else
                 "#{escapedKey} = ?"
         sql = "UPDATE #{table} SET #{updates.join ', '}"
+        sql += " FROM #{mohair._from}" if mohair._from?
         sql += " WHERE #{mohair._where.sql()}" if mohair._where?
         sql
     params: (mohair) ->
