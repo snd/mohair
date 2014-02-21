@@ -4,7 +4,7 @@
 
 mohair is a simple and flexible sql builder with a fluent interface.
 
-[mesa](https://github.com/snd/mohair) builds on top of mohair and adds
+[mesa](https://github.com/snd/mesa) builds on top of mohair and adds
 methods to execute queries, to declare and include associations (`hasOne`, `belongsTo`, `hasMany`, `hasAndBelongsToMany`) and more:
 [go check it out.](https://github.com/snd/mesa)
 
