@@ -95,8 +95,8 @@ module.exports =
         having = criterion args...
         @fluent '_having', if @_having? then @_having.and(having) else having
 
-    mixin: (fn) ->
-        m = fn.call @
+    mixin: (fn, args...) ->
+        m = fn.apply @, args
         unless m
             throw new Error 'mixin must be called with a function that returns a value'
         m
