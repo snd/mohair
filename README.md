@@ -245,17 +245,37 @@ query.params();     // => []
 ##### mixins
 
 ```javascript
-var mostRecentlyUpdated = function() {
-    return this.order("updated_at DESC").limit(1);
+var paginate = function(page, perPage) {
+    return this
+        .limit(perPage)
+        .offset(page * perPage);
 };
 
-var q1 = mohair.table('posts').mixin(mostRecentlyUpdated);
-var q2 = mohair.table('comments').mixin(mostRecentlyUpdated);
+var query = mohair.table('posts')
+    .mixin(paginate, 10, 100)
+    .where(is_public: true);
 
-q1.sql();           // => 'SELECT * FROM posts ORDER BY updated_at DESC LIMIT ?'
-q1.params();        // => [1]
-q2.sql();           // => 'SELECT * FROM comments ORDER BY updated_at DESC LIMIT ?'
-q2.params();        // => [1]
+query.sql();       // => 'SELECT * FROM posts WHERE is_public = ? LIMIT ? OFFSET ?'
+query.params();    // => [true, 100, 1000]
+```
+
+##### extending
+
+```javascript
+var posts = mohair.table('posts');
+
+posts.paginate = function(page, perPage) {
+    return this
+        .limit(perPage)
+        .offset(page * perPage);
+};
+
+var query = mohair.table('posts')
+    .where(is_public: true);
+    .paginate(10, 100)
+
+query.sql();       // => 'SELECT * FROM posts WHERE is_public = ? LIMIT ? OFFSET ?'
+query.params();    // => [true, 100, 1000]
 ```
 
 ##### common table expressions
