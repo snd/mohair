@@ -431,22 +431,20 @@ module.exports =
 
             test.done()
 
-    'mixin':
+    'mixins': (test) ->
 
-        'with order and limit': (test) ->
-            mostRecentlyUpdated = ->
-                @.order("updated_at DESC").limit(1)
+        paginate = (page, perPage) ->
+            this.limit(perPage)
+                .offset(page * perPage)
 
-            q1 = mohair.table('posts').mixin(mostRecentlyUpdated)
-            q2 = mohair.table('comments').mixin(mostRecentlyUpdated)
+        query = mohair.table('posts')
+            .mixin(paginate, 10, 100)
+            .where(is_public: true)
 
-            test.equal q1.sql(), 'SELECT * FROM posts ORDER BY updated_at DESC LIMIT ?'
-            test.deepEqual q1.params(), [1]
+        test.equal query.sql(), 'SELECT * FROM posts WHERE is_public = ? LIMIT ? OFFSET ?'
+        test.deepEqual query.params(), [true, 100, 1000]
 
-            test.equal q2.sql(), 'SELECT * FROM comments ORDER BY updated_at DESC LIMIT ?'
-            test.deepEqual q2.params(), [1]
-
-            test.done()
+        test.done()
 
     'actions overwrite previous actions': (test) ->
         chain = mohair.table('user')
