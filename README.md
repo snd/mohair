@@ -295,8 +295,8 @@ posts.paginate = function(page, perPage) {
 };
 
 var query = mohair.table('posts')
-    .where(is_public: true);
-    .paginate(10, 100)
+    .where(is_public: true)
+    .paginate(10, 100);
 
 query.sql();       // => 'SELECT * FROM posts WHERE is_public = ? LIMIT ? OFFSET ?'
 query.params();    // => [true, 100, 1000]
