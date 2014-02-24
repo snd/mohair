@@ -8,6 +8,30 @@ mohair is a simple and flexible sql builder with a fluent interface.
 methods to execute queries, to declare and include associations (`hasOne`, `belongsTo`, `hasMany`, `hasAndBelongsToMany`) and more:
 [go check it out.](https://github.com/snd/mesa)
 
+- [install](#install)
+- [use](#use)
+    - [require](#require)
+    - [specify a table to use](#specify-a-table-to-use)
+    - [insert a record](#insert-a-record)
+    - [insert with some raw sql](#insert-with-some-raw-sql)
+    - [insert multiple records](#insert-multiple-records)
+    - [delete](#delete)
+    - [update](#update)
+    - [update with some raw sql](#update-with-some-raw-sql)
+    - [select](#select)
+    - [select with subquery](#select-with-subquery)
+    - [select without a table](#select-without-a-table)
+    - [select with criteria](#select-with-criteria)
+    - [order](#order)
+    - [limit and offset](#limit-and-offset)
+    - [join](#join)
+    - [join with criteria](#join-with-criteria)
+    - [group](#group)
+    - [mixins](#mixins)
+    - [extending](#extending)
+    - [common table expressions](#common-table-expressions)
+- [license: MIT](#license-mit)
+
 ### install
 
 ```
