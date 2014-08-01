@@ -176,7 +176,7 @@ update =
             else
                 "#{escapedKey} = ?"
         sql = "UPDATE #{table} SET #{updates.join ', '}"
-        sql += " FROM #{mohair._from}" if mohair._from?
+        sql += " FROM #{mohair._from.sql()}" if mohair._from?
         sql += " WHERE #{mohair._where.sql()}" if mohair._where?
         sql
     params: (mohair) ->
@@ -187,6 +187,7 @@ update =
                 params = params.concat that._updates[key].params()
             else
                 params.push that._updates[key]
+        params = params.concat mohair._from.params() if mohair._from?
         params = params.concat mohair._where.params() if mohair._where?
         params
 

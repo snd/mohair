@@ -185,14 +185,15 @@ module.exports =
 
         'with criteria from multiple tables': (test) ->
             q = mohair.table('user')
-                .from('addresses as a, phones as p')
-                .where("user.id": 3, "user.x": 5, "a.city": "foo", "p.number": "1234567890")
+                .from('addresses as a, phones as p, (select * from contacts where status = ?) as c', 'active')
+                .where("user.id": 3, "user.x": 5, "a.city": "foo", "p.number": "1234567890", "c.name": "bar")
                 .where("a.user_id = user.id")
                 .where("p.user_id = user.id")
+                .where("c.user_id = user.id")
                 .update {name: 'bar', email: 'bar@example.com'}
 
-            test.equal q.sql(), 'UPDATE user SET name = ?, email = ? FROM addresses as a, phones as p WHERE (((user.id = ?) AND (user.x = ?) AND (a.city = ?) AND (p.number = ?)) AND (a.user_id = user.id)) AND (p.user_id = user.id)'
-            test.deepEqual q.params(), ['bar', 'bar@example.com', 3, 5, 'foo', '1234567890']
+            test.equal q.sql(), 'UPDATE user SET name = ?, email = ? FROM addresses as a, phones as p, (select * from contacts where status = ?) as c WHERE ((((user.id = ?) AND (user.x = ?) AND (a.city = ?) AND (p.number = ?) AND (c.name = ?)) AND (a.user_id = user.id)) AND (p.user_id = user.id)) AND (c.user_id = user.id)'
+            test.deepEqual q.params(), ['bar', 'bar@example.com', 'active', 3, 5, 'foo', '1234567890', 'bar']
 
             test.done()
 

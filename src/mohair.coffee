@@ -93,8 +93,9 @@ module.exports =
         having = criterion args...
         @fluent '_having', if @_having? then @_having.and(having) else having
 
-    from: (arg) ->
-        @fluent '_from', arg
+    from: (sql, params...) ->
+        from = @raw sql, params...
+        @fluent '_from', from
 
     sql: ->
         @_action.sql @
