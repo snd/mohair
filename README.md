@@ -1,8 +1,10 @@
 # mohair
 
-[![Build Status](https://travis-ci.org/snd/mohair.png)](https://travis-ci.org/snd/mohair)
+[![NPM version](https://badge.fury.io/js/mohair.svg)](http://badge.fury.io/js/mohair)
+[![Build Status](https://travis-ci.org/snd/mohair.svg?branch=master)](https://travis-ci.org/snd/mohair/branches)
+[![Dependencies](https://david-dm.org/snd/mohair.svg)](https://david-dm.org/snd/mohair)
 
-mohair is a simple and flexible sql builder with a fluent interface.
+> mohair is a simple and flexible sql builder with a fluent interface.
 
 [mesa](https://github.com/snd/mesa) builds on top of mohair and adds
 methods to execute queries, to declare and include associations (`hasOne`, `belongsTo`, `hasMany`, `hasAndBelongsToMany`) and more:
@@ -32,7 +34,9 @@ methods to execute queries, to declare and include associations (`hasOne`, `belo
     - [common table expressions](#common-table-expressions)
 - [license: MIT](#license-mit)
 
-### install
+## background
+
+## get started
 
 ```
 npm install mohair
@@ -360,4 +364,55 @@ WHERE region IN (SELECT region FROM top_regions)
 GROUP BY region, product;
 ```
 
-### license: MIT
+## changelog
+
+### 0.13.0
+
+- now uses criterion@0.4.0: criterion changelog applies to mohair as well [click here to see it](https://github.com/snd/criterion#040)
+- `.from()` supports selecting from multiple tables, selecting from subqueries and has syntax for aliases
+- `.sql()`
+- mohair now conforms to [sql-fragment interface](https://github.com/snd/criterion#the-sql-fragment-interface)
+- escapes more things that are escapable: aliases, names for common table expressions, ...
+- `.mixin` renamed to `.call`
+
+## [license: MIT](LICENSE)
+
+## TODO
+
+- test returning
+  - test returning with params
+
+- test that all parts of the queries get escaped
+  - select DONE
+  - insert
+    - returning
+  - update
+    - returning
+  - delete DONE
+    - returning
+
+- join helper for select
+
+- better errors
+  - check error message in tests for error conditions
+  - test for every possible error condition
+  - throw correct errors (`TypeError` for example)
+- better `.table`
+  - support multiple tables in `.table`
+  - support alias syntax `{foo: 'table'}` in `.table`
+  - support subqueries in `.table`
+  - throw when insert / update / delete with multiple tables
+- make `updateFrom` work
+  - https://github.com/snd/mohair/pull/29/files
+- support insert with subquery
+  - `mohair.insert(['a', 'b', 'c'], mohair.table('user').select('id'))`
+- better joins
+  - think about it !!! ...
+
+- README
+  - functional, immutable
+
+- better documentation
+- better description
+- better keywords
+

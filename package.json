@@ -1,46 +1,51 @@
 {
-    "name": "mohair",
-    "version": "0.12.0",
-    "description": "mohair is a simple and flexible sql builder with a fluent interface",
-    "keywords": ["sql", "builder", "fluent"],
-    "homepage": "http://github.com/snd/mohair",
-    "author": {
-        "name": "Maximilian Krüger",
-        "email": "kruemaxi@gmail.com",
-        "url": "http://github.com/snd"
-    },
-    "contributors": [{
-        "name": "clariture",
-        "url": "https://github.com/clariture"
-    }],
-    "bugs": {
-        "url": "http://github.com/snd/mohair/issues",
-        "email": "kruemaxi@gmail.com"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/snd/mohair.git"
-    },
-    "licenses": {
-        "type": "MIT",
-        "url": "git://github.com/snd/mohair/LICENSE"
-    },
-    "engines": {
-        "node": ">=0.8.5"
-    },
-    "dependencies": {
-        "criterion": "0.3.2"
-    },
-    "devDependencies": {
-        "coffee-script": "1.7.1",
-        "nodeunit": "0.8.5"
-    },
-    "main": "src/mohair",
-    "scripts": {
-        "prepublish": "coffee --bare --compile --output src src/*.coffee",
-        "postpublish": "rm src/*.js",
-        "pretest": "coffee --bare --compile --output src src/*.coffee && coffee --bare --compile --output test test/*.coffee",
-        "posttest": "rm src/*.js && rm test/*.js",
-        "test": "nodeunit test/*.js"
-    }
+  "name": "mohair",
+  "version": "0.13.0",
+  "description": "mohair is a simple and flexible sql builder with a fluent interface",
+  "keywords": [
+    "sql",
+    "builder",
+    "fluent",
+    "immutable"
+  ],
+  "homepage": "http://github.com/snd/mohair",
+  "author": {
+    "name": "Maximilian Krüger",
+    "email": "kruemaxi@gmail.com",
+    "url": "http://github.com/snd"
+  },
+  "contributors": [{
+    "name": "clariture",
+    "url": "https://github.com/clariture"
+  }],
+  "bugs": {
+    "url": "http://github.com/snd/mohair/issues",
+    "email": "kruemaxi@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/snd/mohair.git"
+  },
+  "licenses": {
+    "type": "MIT",
+    "url": "git://github.com/snd/mohair/LICENSE"
+  },
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "dependencies": {
+    "criterion": "0.4.0"
+  },
+  "devDependencies": {
+    "coffee-script": "1.8.0",
+    "nodeunit": "0.9.0"
+  },
+  "scripts": {
+    "compile": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee",
+    "prepublish": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee",
+    "pretest": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee",
+    "test": "node_modules/nodeunit/bin/nodeunit test/*.coffee",
+    "clean": "rm src/*.js"
+  },
+  "main": "src/mohair"
 }
