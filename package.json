@@ -42,10 +42,11 @@
   },
   "scripts": {
     "compile": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee",
+    "clean": "rm -f src/*.js",
     "prepublish": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee",
-    "pretest": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee",
-    "test": "node_modules/nodeunit/bin/nodeunit test/*.coffee",
-    "clean": "rm src/*.js"
+    "pretest": "rm -f src/*.js",
+    "test": "node_modules/nodeunit/bin/nodeunit test/*.coffee || :",
+    "posttest": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee"
   },
   "main": "src/mohair"
 }
