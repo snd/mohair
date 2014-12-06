@@ -182,10 +182,12 @@ prototypes.insert =
 
     records = @_records
 
-    escapedKeys = Object.keys(records[0]).map escape
+    keys = Object.keys(records[0])
+
+    escapedKeys = keys.map escape
 
     rows = records.map (record) ->
-      row = escapedKeys.map (key) ->
+      row = keys.map (key) ->
         if implementsSqlFragmentInterface record[key]
           record[key].sql(escape)
         else
