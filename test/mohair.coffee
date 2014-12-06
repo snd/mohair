@@ -318,6 +318,20 @@ module.exports =
 
         test.done()
 
+      'with raw with params and returning': (test) ->
+        q = mohair
+          .table('user')
+          .returning('id', mohair.raw('x + ?', 7), {a: 'b'})
+          .insert
+            name: 'foo',
+            user_id: 5
+            created_at: mohair.raw('LOG(x, ?)', 3)
+
+        test.equal q.sql(), 'INSERT INTO user(name, user_id, created_at) VALUES (?, ?, LOG(x, ?)) RETURNING id, (x + ?), b AS a'
+        test.deepEqual q.params(), ['foo', 5, 3, 7]
+
+        test.done()
+
     'insert many':
 
       'records with same key order': (test) ->
