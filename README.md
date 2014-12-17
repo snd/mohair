@@ -380,7 +380,8 @@ GROUP BY region, product;
 ## TODO
 
 - test returning
-  - test returning with params
+  - for update
+  - for delete
 
 - test that all parts of the queries get escaped
   - select DONE
@@ -391,23 +392,27 @@ GROUP BY region, product;
   - delete DONE
     - returning
 
+- better `.table`
+  - a seperate from object which is used to construct this
+  - support multiple tables in `.table`
+  - support alias syntax `{foo: 'table'}` in `.table`
+  - support subqueries in `.table`
+  - throw when insert / update / delete with multiple tables
+
+- better joins
+  - think about it !!! ...
+  - for lateral need to support subqueries
+
 - join helper for select
 
 - better errors
   - check error message in tests for error conditions
   - test for every possible error condition
   - throw correct errors (`TypeError` for example)
-- better `.table`
-  - support multiple tables in `.table`
-  - support alias syntax `{foo: 'table'}` in `.table`
-  - support subqueries in `.table`
-  - throw when insert / update / delete with multiple tables
 - make `updateFrom` work
   - https://github.com/snd/mohair/pull/29/files
 - support insert with subquery
   - `mohair.insert(['a', 'b', 'c'], mohair.table('user').select('id'))`
-- better joins
-  - think about it !!! ...
 
 - README
   - functional, immutable
@@ -415,4 +420,3 @@ GROUP BY region, product;
 - better documentation
 - better description
 - better keywords
-
