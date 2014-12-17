@@ -84,7 +84,7 @@ module.exports =
           .table('user')
           .select('name', {order_count: subquery})
 
-        test.equal q.sql(), 'SELECT name, (SELECT count(1) FROM order WHERE (user_id = user.id) AND (price > ?)) AS order_count FROM user'
+        test.equal q.sql(), 'SELECT name, (SELECT count(1) FROM order WHERE user_id = user.id AND price > ?) AS order_count FROM user'
         test.deepEqual q.params(), [10]
 
         test.done()
@@ -117,7 +117,7 @@ module.exports =
       'criteria are anded together': (test) ->
         q = mohair.table('user').where(id: 3).where('name = ?', 'foo').select()
 
-        test.equal q.sql(), 'SELECT * FROM user WHERE (id = ?) AND (name = ?)'
+        test.equal q.sql(), 'SELECT * FROM user WHERE (id = ?) AND name = ?'
         test.deepEqual q.params(), [3, 'foo']
 
         test.done()
@@ -218,7 +218,7 @@ module.exports =
           .limit(10)
           .offset(20)
 
-        test.equal q.sql(), 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id WHERE (id = ?) AND (name = ?) GROUP BY user.id ORDER BY created DESC, name ASC LIMIT ? OFFSET ?'
+        test.equal q.sql(), 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id WHERE (id = ?) AND name = ? GROUP BY user.id ORDER BY created DESC, name ASC LIMIT ? OFFSET ?'
         test.deepEqual q.params(), [3, 'foo', 10, 20]
 
         test.done()
@@ -496,7 +496,7 @@ module.exports =
           .where('x BETWEEN ? AND ?', 50, 55)
           .where($or: {x: 10, y: 6})
 
-        test.equal q.sql(), 'DELETE FROM user WHERE (x BETWEEN ? AND ?) AND ((x = ?) OR (y = ?))'
+        test.equal q.sql(), 'DELETE FROM user WHERE x BETWEEN ? AND ? AND ((x = ?) OR (y = ?))'
         test.deepEqual q.params(), [50, 55, 10, 6]
 
         test.done()
