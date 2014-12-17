@@ -6,7 +6,6 @@ criterion = require 'criterion'
   identity
   beget
   implementsSqlFragmentInterface
-  rawSql
   flatten
 } = criterion.helper
 
@@ -104,7 +103,7 @@ prototypes.select =
       sql += 'WITH '
       parts = []
       parts = Object.keys(mohair._with).map (key) ->
-          escape(key) + ' AS (' + rawSql(mohair._with[key]).sql(escape) + ')'
+          escape(key) + ' AS (' + criterion(mohair._with[key]).sql(escape) + ')'
       sql += parts.join(', ')
       sql += ' '
 
@@ -143,7 +142,7 @@ prototypes.select =
 
     if mohair._with?
       Object.keys(mohair._with).forEach (key) ->
-        params = params.concat rawSql(mohair._with[key]).params()
+        params = params.concat criterion(mohair._with[key]).params()
 
     params = params.concat @_outputs.params()
 
@@ -453,7 +452,7 @@ module.exports =
     fn.apply @, args
 
   raw: (sql, params...) ->
-    rawSql sql, params
+    criterion sql, params...
 
 ###################################################################################
 # implementation of sql-fragment interface
