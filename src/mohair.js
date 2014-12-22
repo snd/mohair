@@ -135,9 +135,8 @@ factories.fromItems = function() {
 
 prototypes.select = {
   sql: function(mohair, escape) {
-    var outputs, parts, sql, table;
+    var outputs, parts, sql;
     outputs = this._outputs;
-    table = escape(mohair._table);
     sql = '';
     if (mohair._with != null) {
       sql += 'WITH ';

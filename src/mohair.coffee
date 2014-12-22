@@ -29,7 +29,7 @@ factories = {}
 # PARTIALS
 
 ###################################################################################
-# comma separated
+# items joined by a separator character
 
 prototypes.joinedItems =
   sql: (escape) ->
@@ -60,7 +60,7 @@ factories.joinedItems = (join, items...) ->
     _items: flatten items
 
 ###################################################################################
-# alias
+# aliases: `table AS alias`
 
 prototypes.aliases =
   sql: (escape) ->
@@ -96,7 +96,7 @@ factories.aliases = (object, escapeStringValues = false) ->
     _escapeStringValues: escapeStringValues
 
 ###################################################################################
-# select output
+# select outputs
 
 # plain strings are treated raw and not escaped
 # objects are used for aliases
@@ -139,8 +139,6 @@ factories.fromItems = (items...) ->
 prototypes.select =
   sql: (mohair, escape) ->
     outputs = @_outputs
-
-    table = escape mohair._table
 
     sql = ''
 
