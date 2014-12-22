@@ -10,68 +10,127 @@ prototypes = {};
 
 factories = {};
 
-prototypes.selectOutputs = {
+prototypes.joinedItems = {
   sql: function(escape) {
     var parts;
-    if (this._outputs.length === 0) {
-      return '*';
-    }
     parts = [];
-    this._outputs.forEach(function(output) {
-      if (implementsSqlFragmentInterface(output)) {
-        return parts.push('(' + output.sql(escape) + ')');
-      } else if ('object' === typeof output) {
-        return Object.keys(output).forEach(function(key) {
-          var value;
-          value = output[key];
-          if (implementsSqlFragmentInterface(value)) {
-            return parts.push('(' + value.sql(escape) + ') AS ' + escape(key));
-          } else {
-            return parts.push(value + ' AS ' + escape(key));
-          }
-        });
+    this._items.forEach(function(item) {
+      var itemSql;
+      if (implementsSqlFragmentInterface(item)) {
+        itemSql = item.sql(escape);
+        if (!item.dontWrap) {
+          itemSql = '(' + itemSql + ')';
+        }
+        return parts.push(itemSql);
       } else {
-        return parts.push(output);
+        return parts.push(item);
+      }
+    });
+    return parts.join(this._join);
+  },
+  params: function() {
+    var params;
+    params = [];
+    this._items.forEach(function(item) {
+      if (implementsSqlFragmentInterface(item)) {
+        return params = params.concat(item.params());
+      }
+    });
+    return params;
+  },
+  dontWrap: true
+};
+
+factories.joinedItems = function() {
+  var items, join;
+  join = arguments[0], items = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+  return beget(prototypes.joinedItems, {
+    _join: join,
+    _items: flatten(items)
+  });
+};
+
+prototypes.aliases = {
+  sql: function(escape) {
+    var escapeStringValues, object, parts;
+    object = this._object;
+    escapeStringValues = this._escapeStringValues;
+    parts = [];
+    Object.keys(object).forEach(function(key) {
+      var value, valueSql;
+      value = object[key];
+      if (implementsSqlFragmentInterface(value)) {
+        valueSql = value.sql(escape);
+        if (!value.dontWrap) {
+          valueSql = '(' + valueSql + ')';
+        }
+        return parts.push(valueSql + ' AS ' + escape(key));
+      } else {
+        return parts.push((escapeStringValues ? escape(value) : value) + ' AS ' + escape(key));
       }
     });
     return parts.join(', ');
   },
   params: function() {
-    var params;
+    var object, params;
+    object = this._object;
     params = [];
-    this._outputs.forEach(function(output) {
-      if (implementsSqlFragmentInterface(output)) {
-        return params = params.concat(output.params());
-      } else if ('object' === typeof output) {
-        return Object.keys(output).forEach(function(key) {
-          var value;
-          value = output[key];
-          if (implementsSqlFragmentInterface(value)) {
-            return params = params.concat(value.params());
-          }
-        });
+    Object.keys(object).forEach(function(key) {
+      var value;
+      value = object[key];
+      if (implementsSqlFragmentInterface(value)) {
+        return params = params.concat(value.params());
       }
     });
     return params;
+  },
+  dontWrap: true
+};
+
+factories.aliases = function(object, escapeStringValues) {
+  if (escapeStringValues == null) {
+    escapeStringValues = false;
   }
+  if (Object.keys(object).length === 0) {
+    throw new Error('alias object must have at least one property');
+  }
+  return beget(prototypes.aliases, {
+    _object: object,
+    _escapeStringValues: escapeStringValues
+  });
 };
 
 factories.selectOutputs = function() {
-  var args, outputs;
-  args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-  outputs = flatten(args);
-  outputs.forEach(function(output) {
-    var keys;
-    if (!implementsSqlFragmentInterface(output) && 'object' === typeof output) {
-      keys = Object.keys(output);
-      if (keys.length === 0) {
-        throw new Error('select object must have at least one property');
-      }
+  var outputs;
+  outputs = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+  if (outputs.length === 0) {
+    return criterion('*');
+  }
+  return factories.joinedItems(', ', outputs.map(function(output) {
+    if (implementsSqlFragmentInterface(output)) {
+      return output;
+    } else if ('object' === typeof output) {
+      return factories.aliases(output);
+    } else {
+      return criterion(output);
     }
-  });
-  return beget(prototypes.selectOutputs, {
-    _outputs: outputs
-  });
+  }));
+};
+
+factories.fromItems = function() {
+  var items;
+  items = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+  return factories.joinedItems(', ', items.map(function(item) {
+    var escapeStringValues;
+    if (implementsSqlFragmentInterface(item)) {
+      return item;
+    } else if ('object' === typeof item) {
+      escapeStringValues = true;
+      return factories.aliases(item, escapeStringValues);
+    } else {
+      return criterion.escape(item);
+    }
+  }));
 };
 
 prototypes.select = {
@@ -91,8 +150,8 @@ prototypes.select = {
     }
     sql += "SELECT ";
     sql += outputs.sql(escape);
-    if (mohair._table != null) {
-      sql += " FROM " + table;
+    if (mohair._from != null) {
+      sql += " FROM " + (mohair._from.sql(escape));
     }
     mohair._joins.forEach(function(join) {
       sql += " " + join.sql;
@@ -134,6 +193,9 @@ prototypes.select = {
       });
     }
     params = params.concat(this._outputs.params());
+    if (mohair._from != null) {
+      params = params.concat(mohair._from.params());
+    }
     mohair._joins.forEach(function(join) {
       if (join.criterion != null) {
         return params = params.concat(join.criterion.params());
@@ -171,10 +233,10 @@ factories.select = function() {
 prototypes.insert = {
   sql: function(mohair, escape) {
     var escapedKeys, keys, records, rows, sql, table;
-    if (mohair._table == null) {
-      throw new Error('.sql() of insert action requires call to `.table()` before it');
+    if (mohair._from == null) {
+      throw new Error('.sql() of insert action requires call to .table() before it');
     }
-    table = escape(mohair._table);
+    table = mohair._from.sql(escape);
     records = this._records;
     keys = Object.keys(records[0]);
     escapedKeys = keys.map(escape);
@@ -200,6 +262,7 @@ prototypes.insert = {
     records = this._records;
     keys = Object.keys(records[0]);
     params = [];
+    params = params.concat(mohair._from.params());
     records.forEach(function(record) {
       return keys.forEach(function(key) {
         if (implementsSqlFragmentInterface(record[key])) {
@@ -260,10 +323,10 @@ prototypes.update = {
   sql: function(mohair, escape) {
     var keys, sql, table, updates, updatesSql;
     updates = this._updates;
-    if (mohair._table == null) {
-      throw new Error('sql of update requires call to table before it');
+    if (mohair._from == null) {
+      throw new Error('.sql() of update action requires call to .table() before it');
     }
-    table = escape(mohair._table);
+    table = mohair._from.sql(escape);
     keys = Object.keys(updates);
     updatesSql = keys.map(function(key) {
       var escapedKey;
@@ -287,6 +350,7 @@ prototypes.update = {
     var params, updates;
     updates = this._updates;
     params = [];
+    params = params.concat(mohair._from.params());
     Object.keys(updates).forEach(function(key) {
       var value;
       value = updates[key];
@@ -318,10 +382,10 @@ factories.update = function(updates) {
 prototypes["delete"] = {
   sql: function(mohair, escape) {
     var sql, table;
-    if (mohair._table == null) {
+    if (mohair._from == null) {
       throw new Error('.sql() of delete action requires call to .table() before it');
     }
-    table = escape(mohair._table);
+    table = mohair._from.sql(escape);
     sql = "DELETE FROM " + table;
     if (mohair._where != null) {
       sql += " WHERE " + (mohair._where.sql(escape));
@@ -334,6 +398,7 @@ prototypes["delete"] = {
   params: function(mohair) {
     var params;
     params = [];
+    params = params.concat(mohair._from.params());
     if (mohair._where != null) {
       params = params.concat(mohair._where.params());
     }
@@ -397,13 +462,10 @@ module.exports = {
   offset: function(arg) {
     return this.fluent('_offset', parseInt(arg, 10));
   },
-  from: function() {
-    var from;
-    from = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-    return this.fluent.apply(this, ['_from'].concat(__slice.call(from)));
-  },
-  table: function(table) {
-    return this.fluent('_table', table);
+  table: function() {
+    var args;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return this.fluent('_from', factories.fromItems.apply(factories, args));
   },
   _joins: [],
   join: function() {

@@ -29,60 +29,106 @@ factories = {}
 # PARTIALS
 
 ###################################################################################
-# select outputs
+# comma separated
 
-# plain strings are treated raw and not escaped, nested arrays are flattened,
-# objects are used for aliases, results are joined with ', '
-prototypes.selectOutputs =
+prototypes.joinedItems =
   sql: (escape) ->
-    if @_outputs.length is 0
-      return '*'
-
     parts = []
-    @_outputs.forEach (output) ->
-      if implementsSqlFragmentInterface output
+    @_items.forEach (item) ->
+      if implementsSqlFragmentInterface item
         # sql fragment
-        parts.push '(' + output.sql(escape) + ')'
-      else if 'object' is typeof output
-        # aliased
-        Object.keys(output).forEach (key) ->
-          value = output[key]
-          if implementsSqlFragmentInterface value
-            parts.push '(' + value.sql(escape) + ') AS ' + escape(key)
-          else
-            parts.push value + ' AS ' + escape(key)
+        itemSql = item.sql(escape)
+        unless item.dontWrap
+          itemSql = '(' + itemSql + ')'
+        parts.push itemSql
       else
         # simple string
-        parts.push output
-    return parts.join ', '
-
+        parts.push item
+    return parts.join @_join
   params: ->
     params = []
-    @_outputs.forEach (output) ->
-      if implementsSqlFragmentInterface output
+    @_items.forEach (item) ->
+      if implementsSqlFragmentInterface item
         # sql fragment
-        params = params.concat output.params()
-      else if 'object' is typeof output
-        # aliased
-        Object.keys(output).forEach (key) ->
-          value = output[key]
-          if implementsSqlFragmentInterface value
-            params = params.concat value.params()
-        # simple strings have no params and are ignored
+        params = params.concat item.params()
     return params
+  dontWrap: true
 
-factories.selectOutputs = (args...) ->
-  outputs = flatten args
+factories.joinedItems = (join, items...) ->
+  beget prototypes.joinedItems,
+    _join: join
+    _items: flatten items
 
-  outputs.forEach (output) ->
-    # ensure there are no empty objects in the list
-    if not implementsSqlFragmentInterface(output) and 'object' is typeof output
-      keys = Object.keys output
-      if keys.length is 0
-        throw new Error 'select object must have at least one property'
+###################################################################################
+# alias
 
-  beget prototypes.selectOutputs,
-    _outputs: outputs
+prototypes.aliases =
+  sql: (escape) ->
+    object = @_object
+    escapeStringValues = @_escapeStringValues
+    parts = []
+    Object.keys(object).forEach (key) ->
+      value = object[key]
+      if implementsSqlFragmentInterface value
+        valueSql = value.sql(escape)
+        unless value.dontWrap
+          valueSql = '(' + valueSql + ')'
+        parts.push valueSql + ' AS ' + escape(key)
+      else
+        parts.push (if escapeStringValues then escape(value) else value) + ' AS ' + escape(key)
+    parts.join(', ')
+  params: ->
+    object = @_object
+    params = []
+    # aliased
+    Object.keys(object).forEach (key) ->
+      value = object[key]
+      if implementsSqlFragmentInterface value
+        params = params.concat value.params()
+    params
+  dontWrap: true
+
+factories.aliases = (object, escapeStringValues = false) ->
+  if Object.keys(object).length is 0
+    throw new Error 'alias object must have at least one property'
+  beget prototypes.aliases,
+    _object: object
+    _escapeStringValues: escapeStringValues
+
+###################################################################################
+# select output
+
+# plain strings are treated raw and not escaped
+# objects are used for aliases
+
+factories.selectOutputs = (outputs...) ->
+  if outputs.length is 0
+    return criterion('*')
+
+  factories.joinedItems ', ', outputs.map (output) ->
+    if implementsSqlFragmentInterface output
+      output
+    else if 'object' is typeof output
+      # alias object
+      factories.aliases output
+    else
+      # raw strings are not escaped
+      criterion output
+
+###################################################################################
+# from items
+
+factories.fromItems = (items...) ->
+  factories.joinedItems ', ', items.map (item) ->
+    if implementsSqlFragmentInterface item
+      item
+    else if 'object' is typeof item
+      # alias object
+      escapeStringValues = true
+      factories.aliases item, escapeStringValues
+    else
+      # strings are interpreted as table names and escaped
+      criterion.escape item
 
 ###################################################################################
 # ACTIONS: select, insert, update, delete
@@ -114,8 +160,8 @@ prototypes.select =
 
     # where to select from:
 
-    if mohair._table?
-      sql += " FROM #{table}"
+    if mohair._from?
+      sql += " FROM #{mohair._from.sql(escape)}"
     mohair._joins.forEach (join) ->
       sql += " #{join.sql}"
       sql += " AND (#{join.criterion.sql(escape)})" if join.criterion?
@@ -145,6 +191,8 @@ prototypes.select =
         params = params.concat criterion(mohair._with[key]).params()
 
     params = params.concat @_outputs.params()
+    if mohair._from?
+      params = params.concat mohair._from.params()
 
     mohair._joins.forEach (join) ->
       if join.criterion?
@@ -174,10 +222,10 @@ factories.select = (outputs...) ->
 
 prototypes.insert =
   sql: (mohair, escape) ->
-    unless mohair._table?
-      throw new Error '.sql() of insert action requires call to `.table()` before it'
+    unless mohair._from?
+      throw new Error '.sql() of insert action requires call to .table() before it'
 
-    table = escape mohair._table
+    table = mohair._from.sql(escape)
 
     records = @_records
 
@@ -206,6 +254,8 @@ prototypes.insert =
     keys = Object.keys(records[0])
 
     params = []
+
+    params = params.concat mohair._from.params()
 
     records.forEach (record) ->
       keys.forEach (key) ->
@@ -255,10 +305,10 @@ prototypes.update =
   sql: (mohair, escape) ->
     updates = @_updates
 
-    unless mohair._table?
-      throw new Error 'sql of update requires call to table before it'
+    unless mohair._from?
+      throw new Error '.sql() of update action requires call to .table() before it'
 
-    table = escape mohair._table
+    table = mohair._from.sql(escape)
     keys = Object.keys updates
 
     updatesSql = keys.map (key) ->
@@ -279,6 +329,8 @@ prototypes.update =
     updates = @_updates
 
     params = []
+
+    params = params.concat mohair._from.params()
 
     Object.keys(updates).forEach (key) ->
       value = updates[key]
@@ -305,10 +357,10 @@ factories.update = (updates) ->
 
 prototypes.delete =
   sql: (mohair, escape) ->
-    unless mohair._table?
+    unless mohair._from?
       throw new Error '.sql() of delete action requires call to .table() before it'
 
-    table = escape mohair._table
+    table = mohair._from.sql(escape)
     sql = "DELETE FROM #{table}"
     if mohair._where?
       sql += " WHERE #{mohair._where.sql(escape)}"
@@ -318,6 +370,7 @@ prototypes.delete =
 
   params: (mohair) ->
     params = []
+    params = params.concat mohair._from.params()
     if mohair._where?
       params = params.concat mohair._where.params()
     if mohair._returning?
@@ -380,11 +433,11 @@ module.exports =
 # from
 
   # supports multiple tables, subqueries and aliases
-  from: (from...) ->
-    @fluent '_from', from...
+  # from: (from...) ->
+  #   @fluent '_from', from...
 
-  table: (table) ->
-    @fluent '_table', table
+  table: (args...) ->
+    @fluent '_from', factories.fromItems args...
 
   _joins: []
   join: (sql, criterionArgs...) ->

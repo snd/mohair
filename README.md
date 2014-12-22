@@ -379,6 +379,22 @@ GROUP BY region, product;
 
 ## TODO
 
+- criterion.wrapped()
+
+- better `.table`
+  - a seperate from object which is used to construct this
+  - support multiple tables in `.table`
+  - support alias syntax `{foo: 'table'}` in `.table`
+  - support subqueries in `.table`
+  - throw when insert / update / delete with multiple tables
+  - there must be at least one from item
+
+- test better tables
+
+- better testing of escaping
+  - test escaping for each and every query as in criterion !!!!
+    - q.escape(...)
+
 - test returning
   - for update
   - for delete
@@ -391,13 +407,6 @@ GROUP BY region, product;
     - returning
   - delete DONE
     - returning
-
-- better `.table`
-  - a seperate from object which is used to construct this
-  - support multiple tables in `.table`
-  - support alias syntax `{foo: 'table'}` in `.table`
-  - support subqueries in `.table`
-  - throw when insert / update / delete with multiple tables
 
 - better joins
   - think about it !!! ...
