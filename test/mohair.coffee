@@ -13,6 +13,10 @@ weirdEscape = (string) ->
 
 module.exports =
 
+  'getTable': (test) ->
+    test.equal 'user', mohair.table('user').getTable()
+    test.done()
+
   'actions':
 
     'select':
@@ -97,7 +101,7 @@ module.exports =
           .select('count(1)')
 
         q = mohair
-          .table(subquery)
+          .from(subquery)
           .select('name')
 
         test.equal q.sql(), 'SELECT name FROM (SELECT count(1) FROM order WHERE user_id = user.id AND price > ?)'
@@ -226,16 +230,20 @@ module.exports =
       'everything together': (test) ->
         q = mohair.table('user')
           .select('user.*, count(project.id) AS project_count')
+          .distinct('ON (name)')
+          .join('JOIN project ON user.id = project.user_id')
           .where(id: 3)
           .where('name = ?', 'foo')
-          .join('JOIN project ON user.id = project.user_id')
           .group('user.id')
-          .order('created DESC, name ASC')
+          .having(year: 2000)
+          .window('PARTITION BY id')
+          .order('created DESC', 'name ASC')
           .limit(10)
           .offset(20)
+          .for('UPDATE')
 
-        test.equal q.sql(), 'SELECT user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id WHERE (id = ?) AND name = ? GROUP BY user.id ORDER BY created DESC, name ASC LIMIT ? OFFSET ?'
-        test.deepEqual q.params(), [3, 'foo', 10, 20]
+        test.equal q.sql(), 'SELECT DISTINCT ON (name) user.*, count(project.id) AS project_count FROM user JOIN project ON user.id = project.user_id WHERE (id = ?) AND name = ? GROUP BY user.id HAVING year = ? WINDOW PARTITION BY id ORDER BY created DESC, name ASC LIMIT ? OFFSET ? FOR UPDATE'
+        test.deepEqual q.params(), [3, 'foo', 2000, 10, 20]
 
         test.done()
 

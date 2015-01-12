@@ -379,14 +379,26 @@ GROUP BY region, product;
 
 ## TODO
 
+- fix js conversion
+
+- better order
+- table can be an alias expression
+
+- test things in isolation
+
+
+- .with should also have an effect for insert, update, delete
+
+- test update from
+
 - criterion.wrapped()
 
-- better `.table`
+- better `.using`
+  - needs at least one table
   - a seperate from object which is used to construct this
   - support multiple tables in `.table`
   - support alias syntax `{foo: 'table'}` in `.table`
   - support subqueries in `.table`
-  - throw when insert / update / delete with multiple tables
   - there must be at least one from item
 
 - test better tables
@@ -394,10 +406,6 @@ GROUP BY region, product;
 - better testing of escaping
   - test escaping for each and every query as in criterion !!!!
     - q.escape(...)
-
-- test returning
-  - for update
-  - for delete
 
 - test that all parts of the queries get escaped
   - select DONE
@@ -408,9 +416,19 @@ GROUP BY region, product;
   - delete DONE
     - returning
 
+- test returning
+  - for update
+  - for delete
+
+- support more select syntax
+
 - better joins
   - think about it !!! ...
   - for lateral need to support subqueries
+  - similar to combination (union, ...)
+  - .join('LEFT JOIN LATERAL', subquery, 'ON', condition)
+
+- support row locks
 
 - join helper for select
 
@@ -429,3 +447,5 @@ GROUP BY region, product;
 - better documentation
 - better description
 - better keywords
+
+- use lodash and replace helpers

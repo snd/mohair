@@ -1,15 +1,13 @@
+_ = require 'lodash'
 criterion = require 'criterion'
 
 # pull in some helpers from criterion
 
+# TODO put this directly on criterion
 {
-  identity
-  beget
   implementsSqlFragmentInterface
-  flatten
 } = criterion.helper
-
-###################################################################################
+################################################################################
 # PROTOTYPES & FACTORIES
 
 # prototype objects for the action-objects that represent sql actions.
@@ -25,10 +23,10 @@ prototypes = {}
 
 factories = {}
 
-###################################################################################
+################################################################################
 # PARTIALS
 
-###################################################################################
+################################################################################
 # items joined by a separator character
 
 prototypes.joinedItems =
@@ -55,11 +53,11 @@ prototypes.joinedItems =
   dontWrap: true
 
 factories.joinedItems = (join, items...) ->
-  beget prototypes.joinedItems,
+  _.create prototypes.joinedItems,
     _join: join
-    _items: flatten items
+    _items: _.flatten items
 
-###################################################################################
+################################################################################
 # aliases: `table AS alias`
 
 prototypes.aliases =
@@ -91,11 +89,11 @@ prototypes.aliases =
 factories.aliases = (object, escapeStringValues = false) ->
   if Object.keys(object).length is 0
     throw new Error 'alias object must have at least one property'
-  beget prototypes.aliases,
+  _.create prototypes.aliases,
     _object: object
     _escapeStringValues: escapeStringValues
 
-###################################################################################
+################################################################################
 # select outputs
 
 # plain strings are treated raw and not escaped
@@ -105,7 +103,7 @@ factories.selectOutputs = (outputs...) ->
   if outputs.length is 0
     return criterion('*')
 
-  factories.joinedItems ', ', outputs.map (output) ->
+  factories.joinedItems ', ', _.flatten(outputs).map (output) ->
     if implementsSqlFragmentInterface output
       output
     else if 'object' is typeof output
@@ -115,11 +113,11 @@ factories.selectOutputs = (outputs...) ->
       # raw strings are not escaped
       criterion output
 
-###################################################################################
+################################################################################
 # from items
 
 factories.fromItems = (items...) ->
-  factories.joinedItems ', ', items.map (item) ->
+  factories.joinedItems ', ', _.flatten(items).map (item) ->
     if implementsSqlFragmentInterface item
       item
     else if 'object' is typeof item
@@ -130,16 +128,14 @@ factories.fromItems = (items...) ->
       # strings are interpreted as table names and escaped
       criterion.escape item
 
-###################################################################################
+################################################################################
 # ACTIONS: select, insert, update, delete
 
-###################################################################################
+################################################################################
 # select
 
 prototypes.select =
   sql: (mohair, escape) ->
-    outputs = @_outputs
-
     sql = ''
 
     # common table expression ?
@@ -147,31 +143,51 @@ prototypes.select =
       sql += 'WITH '
       parts = []
       parts = Object.keys(mohair._with).map (key) ->
-          escape(key) + ' AS (' + criterion(mohair._with[key]).sql(escape) + ')'
+        escape(key) + ' AS (' + criterion(mohair._with[key]).sql(escape) + ')'
       sql += parts.join(', ')
       sql += ' '
 
-    sql += "SELECT "
+    sql += "SELECT"
+
+    if mohair._distinct?
+      sql += " DISTINCT #{mohair._distinct}"
+
+    sql += " "
 
     # what to select
-    sql += outputs.sql(escape)
+    sql += @_outputs.sql(escape)
 
     # where to select from:
 
+    # from takes precedence over table
     if mohair._from?
       sql += " FROM #{mohair._from.sql(escape)}"
+    else if mohair._table?
+      sql += " FROM #{escape mohair._table}"
+
     mohair._joins.forEach (join) ->
       sql += " #{join.sql}"
-      sql += " AND (#{join.criterion.sql(escape)})" if join.criterion?
+      if join.criterion?
+        sql += " AND (#{join.criterion.sql(escape)})"
 
-    # who to modify the select
+    # how to modify the select
 
-    sql += " WHERE #{mohair._where.sql(escape)}" if mohair._where?
-    sql += " GROUP BY #{mohair._group}" if mohair._group?
-    sql += " HAVING #{mohair._having.sql(escape)}" if mohair._having?
-    sql += " ORDER BY #{mohair._order}" if mohair._order?
-    sql += " LIMIT ?" if mohair._limit?
-    sql += " OFFSET ?" if mohair._offset?
+    if mohair._where?
+      sql += " WHERE #{mohair._where.sql(escape)}"
+    if mohair._group?
+      sql += " GROUP BY #{mohair._group.join(', ')}"
+    if mohair._having?
+      sql += " HAVING #{mohair._having.sql(escape)}"
+    if mohair._window?
+      sql += " WINDOW #{mohair._window}"
+    if mohair._order?
+      sql += " ORDER BY #{mohair._order.join(', ')}"
+    if mohair._limit?
+      sql += " LIMIT ?"
+    if mohair._offset?
+      sql += " OFFSET ?"
+    if mohair._for?
+      sql += " FOR #{mohair._for}"
 
     # combination with other queries ?
 
@@ -189,6 +205,7 @@ prototypes.select =
         params = params.concat criterion(mohair._with[key]).params()
 
     params = params.concat @_outputs.params()
+
     if mohair._from?
       params = params.concat mohair._from.params()
 
@@ -212,18 +229,21 @@ prototypes.select =
     return params
 
 factories.select = (outputs...) ->
-  beget prototypes.select,
+  _.create prototypes.select,
     _outputs: factories.selectOutputs outputs...
 
-###################################################################################
+################################################################################
 # insert
 
 prototypes.insert =
   sql: (mohair, escape) ->
-    unless mohair._from?
+    unless mohair._table?
       throw new Error '.sql() of insert action requires call to .table() before it'
 
-    table = mohair._from.sql(escape)
+    if mohair._from?
+      throw new Error '.sql() of insert action ignores and does not allow call to .from() before it'
+
+    table = escape mohair._table
 
     records = @_records
 
@@ -252,8 +272,6 @@ prototypes.insert =
     keys = Object.keys(records[0])
 
     params = []
-
-    params = params.concat mohair._from.params()
 
     records.forEach (record) ->
       keys.forEach (key) ->
@@ -287,26 +305,26 @@ factories.insert = (recordOrRecords) ->
         if not value? and record[key] isnt null
           throw new Error msg
 
-    return beget prototypes.insert, {_records: recordOrRecords}
+    return _.create prototypes.insert, {_records: recordOrRecords}
 
   if 'object' is typeof recordOrRecords
     if Object.keys(recordOrRecords).length is 0
       throw new Error "can't insert empty object"
-    return beget prototypes.insert, {_records: [recordOrRecords]}
+    return _.create prototypes.insert, {_records: [recordOrRecords]}
 
   throw new TypeError 'argument must be an object or an array'
 
-###################################################################################
+################################################################################
 # update
 
 prototypes.update =
   sql: (mohair, escape) ->
     updates = @_updates
 
-    unless mohair._from?
+    unless mohair._table?
       throw new Error '.sql() of update action requires call to .table() before it'
 
-    table = mohair._from.sql(escape)
+    table = escape mohair._table
     keys = Object.keys updates
 
     updatesSql = keys.map (key) ->
@@ -317,6 +335,8 @@ prototypes.update =
         "#{escapedKey} = ?"
 
     sql = "UPDATE #{table} SET #{updatesSql.join ', '}"
+    if mohair._from?
+      sql += " FROM #{mohair._from.sql(escape)}"
     if mohair._where?
       sql += " WHERE #{mohair._where.sql(escape)}"
     if mohair._returning?
@@ -328,14 +348,15 @@ prototypes.update =
 
     params = []
 
-    params = params.concat mohair._from.params()
-
     Object.keys(updates).forEach (key) ->
       value = updates[key]
       if implementsSqlFragmentInterface value
         params = params.concat value.params()
       else
         params.push value
+
+    if mohair._from?
+      params = params.concat mohair._from.params()
 
     if mohair._where?
       params = params.concat mohair._where.params()
@@ -347,19 +368,22 @@ prototypes.update =
 factories.update = (updates) ->
   if Object.keys(updates).length is 0
     throw new Error 'nothing to update'
-  beget prototypes.update,
+  _.create prototypes.update,
     _updates: updates
 
-###################################################################################
+################################################################################
 # delete
 
 prototypes.delete =
   sql: (mohair, escape) ->
-    unless mohair._from?
+    unless mohair._table?
       throw new Error '.sql() of delete action requires call to .table() before it'
 
-    table = mohair._from.sql(escape)
+    table = escape mohair._table
     sql = "DELETE FROM #{table}"
+    # from for delete acts as using
+    if mohair._from?
+      sql += " USING #{mohair._from.sql(escape)}"
     if mohair._where?
       sql += " WHERE #{mohair._where.sql(escape)}"
     if mohair._returning?
@@ -368,7 +392,8 @@ prototypes.delete =
 
   params: (mohair) ->
     params = []
-    params = params.concat mohair._from.params()
+    if mohair._from?
+      params = params.concat mohair._from.params()
     if mohair._where?
       params = params.concat mohair._where.params()
     if mohair._returning?
@@ -376,34 +401,31 @@ prototypes.delete =
     return params
 
 factories.delete = ->
-  beget prototypes.delete
+  _.create prototypes.delete
 
-###################################################################################
+################################################################################
 # MOHAIR FLUENT API
 
 module.exports =
 
-###################################################################################
+################################################################################
 # core
-
-  clone: ->
-    Object.create @
 
   # the magic behind mohair's fluent interface:
   # prototypically inherit from `this` and set `key` to `value`
 
   fluent: (key, value) ->
-    object = @clone()
+    object = Object.create @
     object[key] = value
     return object
 
-  _escape: identity
+  _escape: _.identity
   escape: (arg) -> @fluent '_escape', arg
 
   # the default action is select *
   _action: factories.select '*'
 
-###################################################################################
+################################################################################
 # actions
 
   insert: (args...) -> @fluent '_action', factories.insert args...
@@ -411,30 +433,45 @@ module.exports =
   delete: -> @fluent '_action', factories.delete()
   update: (data) -> @fluent '_action', factories.update data
 
-###################################################################################
+################################################################################
 # for select action only
 
   with: (arg) ->
     unless ('object' is typeof arg) and Object.keys(arg).length isnt 0
       throw new Error 'with must be called with an object that has at least one property'
     @fluent '_with', arg
-  group: (arg) ->
-    @fluent '_group', arg
-  order: (arg) ->
-    @fluent '_order', arg
+  distinct: (arg = '') ->
+    @fluent '_distinct', arg
+  group: (args...) ->
+    @fluent '_group', args
+  window: (arg) ->
+    @fluent '_window', arg
+  order: (args...) ->
+    @fluent '_order', args
   limit: (arg) ->
     @fluent '_limit', parseInt(arg, 10)
   offset: (arg) ->
     @fluent '_offset', parseInt(arg, 10)
+  for: (arg) ->
+    @fluent '_for', arg
 
-###################################################################################
+################################################################################
 # from
 
   # supports multiple tables, subqueries and aliases
   # from: (from...) ->
   #   @fluent '_from', from...
 
-  table: (args...) ->
+  getTable: ->
+    @_table
+
+  # table must be a simple string
+  table: (table) ->
+    if 'string' isnt typeof table
+      throw new Error 'table must be a string. use .from() to call with multiple tables or subqueries.'
+    @fluent '_table', table
+
+  from: (args...) ->
     @fluent '_from', factories.fromItems args...
 
   _joins: []
@@ -442,14 +479,14 @@ module.exports =
     join = {sql: sql}
     join.criterion = criterion criterionArgs... if criterionArgs.length isnt 0
 
-    next = @clone()
+    next = Object.create @
     # slice without arguments clones an array
     next._joins = @_joins.slice()
     next._joins.push join
 
     return next
 
-###################################################################################
+################################################################################
 # where conditions
 
   where: (args...) ->
@@ -460,7 +497,7 @@ module.exports =
     having = criterion args...
     @fluent '_having', if @_having? then @_having.and(having) else having
 
-###################################################################################
+################################################################################
 # returning (ignored for select)
 
   returning: (args...) ->
@@ -470,7 +507,7 @@ module.exports =
     else
       @fluent '_returning', factories.selectOutputs args...
 
-###################################################################################
+################################################################################
 # combining queries (select only)
 
   _combinations: []
@@ -495,7 +532,7 @@ module.exports =
   exceptAll: (query) ->
     @combine query, 'EXCEPT ALL'
 
-###################################################################################
+################################################################################
 # helpers
 
   # call a one-off function as if it were part of mohair
@@ -505,7 +542,7 @@ module.exports =
   raw: (sql, params...) ->
     criterion sql, params...
 
-###################################################################################
+################################################################################
 # implementation of sql-fragment interface
 
   sql: (escape) ->
@@ -514,8 +551,3 @@ module.exports =
 
   params: ->
     @_action.params @
-
-###################################################################################
-# reexport criterion helpers
-
-  helper: criterion.helper

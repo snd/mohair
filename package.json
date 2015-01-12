@@ -31,22 +31,21 @@
     "url": "git://github.com/snd/mohair/LICENSE"
   },
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=0.10.0"
   },
   "dependencies": {
-    "criterion": "0.4.0-rc.1"
+    "criterion": "0.4.0-rc.1",
+    "lodash": "2.4.1"
   },
   "devDependencies": {
     "coffee-script": "1.8.0",
     "nodeunit": "0.9.0"
   },
   "scripts": {
-    "compile": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee",
-    "clean": "rm -f src/*.js",
-    "prepublish": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee",
-    "pretest": "rm -f src/*.js",
-    "test": "node_modules/nodeunit/bin/nodeunit test/*.coffee || :",
-    "posttest": "node_modules/coffee-script/bin/coffee --bare --compile --output src src/*.coffee"
+    "compile": "node_modules/coffee-script/bin/coffee --bare --compile --output lib/ src/",
+    "prepublish": "npm run compile",
+    "pretest": "npm run compile",
+    "test": "node_modules/nodeunit/bin/nodeunit test/*.coffee"
   },
-  "main": "src/mohair"
+  "main": "lib/mohair"
 }
