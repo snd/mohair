@@ -406,18 +406,24 @@ factories.delete = ->
 ################################################################################
 # MOHAIR FLUENT API
 
-module.exports =
+mohairBaseProperties =
 
 ################################################################################
 # core
 
-  # the magic behind mohair's fluent interface:
-  # prototypically inherit from `this` and set `key` to `value`
+  clone: ->
+    clone = Object.create mohairBaseProperties
+    # we later make it such that `mohairBaseProperties` is the prototype of `this`:
+    # copy over everything that is not in `mohairBaseProperties`
+    # which is usually very few properties.
+    for own k, v of this
+      clone[k] = v
+    return clone
 
   fluent: (key, value) ->
-    object = Object.create @
-    object[key] = value
-    return object
+    next = @clone()
+    next[key] = value
+    return next
 
   _escape: _.identity
   escape: (arg) -> @fluent '_escape', arg
@@ -479,7 +485,7 @@ module.exports =
     join = {sql: sql}
     join.criterion = criterion criterionArgs... if criterionArgs.length isnt 0
 
-    next = Object.create @
+    next = @clone()
     # slice without arguments clones an array
     next._joins = @_joins.slice()
     next._joins.push join
@@ -551,3 +557,10 @@ module.exports =
 
   params: ->
     @_action.params @
+
+################################################################################
+# exports
+
+mohairOwnProperties = Object.create mohairBaseProperties
+
+module.exports = mohairOwnProperties
