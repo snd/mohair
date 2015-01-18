@@ -406,22 +406,23 @@ factories.delete = ->
 ################################################################################
 # MOHAIR FLUENT API
 
-mohairBaseProperties =
+Mohair = (source) ->
+  if source
+    # only copy OWN properties.
+    # don't copy properties on the prototype.
+    # OWN properties are just non-default values and user defined methods.
+    # OWN properties tend to be very few for most queries.
+    for own k, v of source
+      this[k] = v
+  return this
+
+Mohair.prototype =
 
 ################################################################################
 # core
 
-  clone: ->
-    clone = Object.create mohairBaseProperties
-    # we later make it such that `mohairBaseProperties` is the prototype of `this`:
-    # copy over everything that is not in `mohairBaseProperties`
-    # which is usually very few properties.
-    for own k, v of this
-      clone[k] = v
-    return clone
-
   fluent: (key, value) ->
-    next = @clone()
+    next = new Mohair @
     next[key] = value
     return next
 
@@ -485,7 +486,7 @@ mohairBaseProperties =
     join = {sql: sql}
     join.criterion = criterion criterionArgs... if criterionArgs.length isnt 0
 
-    next = @clone()
+    next = new Mohair @
     # slice without arguments clones an array
     next._joins = @_joins.slice()
     next._joins.push join
@@ -561,6 +562,4 @@ mohairBaseProperties =
 ################################################################################
 # exports
 
-mohairOwnProperties = Object.create mohairBaseProperties
-
-module.exports = mohairOwnProperties
+module.exports = new Mohair
