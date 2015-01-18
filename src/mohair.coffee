@@ -183,9 +183,17 @@ prototypes.select =
     if mohair._order?
       sql += " ORDER BY #{mohair._order.join(', ')}"
     if mohair._limit?
-      sql += " LIMIT ?"
+      sql += ' LIMIT '
+      if implementsSqlFragmentInterface mohair._limit
+        sql += mohair._limit.sql(escape)
+      else
+        sql += '?'
     if mohair._offset?
-      sql += " OFFSET ?"
+      sql += ' OFFSET '
+      if implementsSqlFragmentInterface mohair._offset
+        sql += mohair._offset.sql(escape)
+      else
+        sql += '?'
     if mohair._for?
       sql += " FOR #{mohair._for}"
 
@@ -218,9 +226,15 @@ prototypes.select =
     if mohair._having?
       params = params.concat mohair._having.params()
     if mohair._limit?
-      params.push mohair._limit
+      if implementsSqlFragmentInterface mohair._limit
+        params = params.concat mohair._limit.params()
+      else
+        params.push mohair._limit
     if mohair._offset?
-      params.push mohair._offset
+      if implementsSqlFragmentInterface mohair._offset
+        params = params.concat mohair._offset.params()
+      else
+        params.push mohair._offset
 
     if mohair._combinations?
       mohair._combinations.forEach (combination) ->
@@ -456,9 +470,17 @@ Mohair.prototype =
   order: (args...) ->
     @fluent '_order', args
   limit: (arg) ->
-    @fluent '_limit', parseInt(arg, 10)
+    @fluent '_limit',
+      if implementsSqlFragmentInterface arg
+        arg
+      else
+        parseInt(arg, 10)
   offset: (arg) ->
-    @fluent '_offset', parseInt(arg, 10)
+    @fluent '_offset',
+      if implementsSqlFragmentInterface arg
+        arg
+      else
+        parseInt(arg, 10)
   for: (arg) ->
     @fluent '_for', arg
 
@@ -558,6 +580,8 @@ Mohair.prototype =
 
   params: ->
     @_action.params @
+
+  implementsSqlFragmentInterface: implementsSqlFragmentInterface
 
 ################################################################################
 # exports
