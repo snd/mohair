@@ -379,6 +379,14 @@ GROUP BY region, product;
 
 ## TODO
 
+- test offset and limit with raw
+
+- fix union
+
+- update from
+
+- support raw everywhere
+
 - fix js conversion
 
 - better order
